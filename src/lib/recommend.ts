@@ -1,5 +1,5 @@
 import { countries, type Country } from "@/data/countries";
-import type { UserProfile, CountryMatch, Insight, ImportanceLevel } from "@/types/profile";
+import type { UserProfile, CountryMatch, Insight, ImportanceLevel, Goal } from "@/types/profile";
 import type { Locale } from "@/contexts/I18nContext";
 import { generateInsights, generateSummary, generateEdge } from "./explain";
 
@@ -17,9 +17,6 @@ const WEIGHTS = {
 } as const;
 
 // Importance level (1–5) → multiplier that scales the base weight
-// At level 1 the factor contributes ~40% of its base weight;
-// at level 5 it contributes 160%, making the user's stated priorities
-// genuinely shift the ranking.
 function importanceMultiplier(level: ImportanceLevel): number {
   return 0.4 + (level - 1) * 0.3; // 0.4, 0.7, 1.0, 1.3, 1.6
 }
@@ -28,8 +25,11 @@ function importanceMultiplier(level: ImportanceLevel): number {
 const BUDGET_USD: Record<string, number> = {
   under_1000: 800,
   "1000_2000": 1500,
+  "1000_3000": 2000,
   "2000_4000": 3000,
+  "3000_5000": 4000,
   "4000_plus": 6000,
+  "5000_plus": 7000,
 };
 
 // Rough monthly cost estimate from cost_of_living_index
@@ -61,15 +61,14 @@ function scoreBudget(country: Country, profile: UserProfile): number {
   const budget = BUDGET_USD[profile.budgetRange] || 3000;
   const cost = estimatedMonthlyCost(country.cost_of_living.index);
   const ratio = budget / cost;
-  if (ratio >= 2.5) return 100; // very comfortable
+  if (ratio >= 2.5) return 100;
   if (ratio >= 1.5) return 85;
   if (ratio >= 1.0) return 65;
   if (ratio >= 0.7) return 35;
-  return 10; // can't afford
+  return 10;
 }
 
 function scoreCostRaw(country: Country): number {
-  // Lower cost of living → higher score
   return Math.max(0, Math.min(100, 110 - country.cost_of_living.index));
 }
 
@@ -77,6 +76,10 @@ function scoreClimate(country: Country, profile: UserProfile): number {
   if (profile.climatePreference === "any") return 70;
   const text = country.climate.description.en.toLowerCase();
   const keywords: Record<string, string[]> = {
+    warm: ["tropical", "hot", "monsoon", "equatorial", "humid", "arid", "desert", "subtropical", "mediterranean"],
+    mild: ["temperate", "maritime", "mediterranean", "oceanic", "mild", "moderate"],
+    cold: ["continental", "cold", "alpine", "subarctic", "arctic", "snow"],
+    // Legacy compat
     tropical: ["tropical", "monsoon", "equatorial", "rainforest", "humid year"],
     temperate: ["temperate", "maritime", "mediterranean", "oceanic", "mild"],
     continental: ["continental", "cold winter", "alpine", "subarctic"],
@@ -86,24 +89,52 @@ function scoreClimate(country: Country, profile: UserProfile): number {
   return terms.some((t) => text.includes(t)) ? 100 : 15;
 }
 
-function scoreGoal(country: Country, profile: UserProfile): number {
-  let s = 40; // baseline
+// Score a single goal against a country
+function scoreSingleGoal(country: Country, goal: Goal, profile: UserProfile): number {
+  let s = 40;
 
-  switch (profile.goal) {
+  switch (goal) {
+    case "low_taxes":
+      if (country.tax.level === "low") s += 40;
+      else if (country.tax.level === "medium") s += 15;
+      if (country.government.political_stability === "stable") s += 10;
+      if (country.visa.ease_of_access !== "hard") s += 5;
+      break;
+
+    case "save_money":
+      if (country.cost_of_living.index <= 30) s += 35;
+      else if (country.cost_of_living.index <= 50) s += 20;
+      else if (country.cost_of_living.index <= 70) s += 5;
+      if (country.tax.level === "low") s += 15;
+      else if (country.tax.level === "medium") s += 5;
+      if (country.safety.safety_index >= 50) s += 5;
+      break;
+
+    case "quality_of_life":
+      if (country.safety.safety_index >= 70) s += 20;
+      else if (country.safety.safety_index >= 55) s += 10;
+      if (country.population_data.life_expectancy >= 78) s += 10;
+      if (country.economy.gdp_per_capita >= 30000) s += 10;
+      if (country.government.political_stability === "stable") s += 10;
+      if (profile.familyStatus === "family" && country.safety.safety_index >= 60) s += 5;
+      break;
+
     case "business":
-      if (country.tax.level === "low") s += 30;
+      if (country.tax.level === "low") s += 25;
       else if (country.tax.level === "medium") s += 10;
       if (country.economy.gdp > 1500) s += 10;
       if (country.visa.ease_of_access === "easy") s += 10;
       if (country.safety.safety_index >= 60) s += 5;
+      if (country.government.political_stability === "stable") s += 5;
       break;
 
-    case "expatriation":
-      if (country.visa.ease_of_access === "easy") s += 20;
-      else if (country.visa.ease_of_access === "medium") s += 8;
-      if (country.safety.safety_index >= 65) s += 15;
-      if (country.cost_of_living.index <= 45) s += 10;
-      if (profile.familyStatus === "family" && country.safety.safety_index >= 60) s += 10;
+    case "remote_work":
+      if (country.cost_of_living.index <= 45) s += 20;
+      else if (country.cost_of_living.index <= 65) s += 10;
+      if (country.visa.ease_of_access === "easy") s += 15;
+      else if (country.visa.ease_of_access === "medium") s += 5;
+      if (country.safety.safety_index >= 55) s += 10;
+      if (country.economy.gdp_per_capita >= 15000) s += 5;
       break;
 
     case "investment":
@@ -112,10 +143,20 @@ function scoreGoal(country: Country, profile: UserProfile): number {
       else if (country.tax.level === "medium") s += 8;
       if (country.safety.safety_index >= 55) s += 10;
       if (country.visa.ease_of_access !== "hard") s += 5;
+      if (country.government.political_stability === "stable") s += 5;
       break;
 
-    case "exploration":
-      s += 15; // all countries are interesting
+    // Legacy goals
+    case "expatriation" as Goal:
+      if (country.visa.ease_of_access === "easy") s += 20;
+      else if (country.visa.ease_of_access === "medium") s += 8;
+      if (country.safety.safety_index >= 65) s += 15;
+      if (country.cost_of_living.index <= 45) s += 10;
+      if (profile.familyStatus === "family" && country.safety.safety_index >= 60) s += 10;
+      break;
+
+    case "exploration" as Goal:
+      s += 15;
       if (country.cost_of_living.index <= 40) s += 15;
       if (country.visa.ease_of_access === "easy") s += 10;
       if (country.safety.safety_index >= 50) s += 5;
@@ -125,11 +166,18 @@ function scoreGoal(country: Country, profile: UserProfile): number {
   return Math.min(s, 100);
 }
 
+// Multi-goal scoring — average of all selected goals
+function scoreGoal(country: Country, profile: UserProfile): number {
+  const goals = profile.goals && profile.goals.length > 0 ? profile.goals : [profile.goal];
+  const scores = goals.map((g) => scoreSingleGoal(country, g, profile));
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+}
+
 // ---------------------------------------------------------------------------
 // Master scoring — combines all factors with user-adjusted weights
 // ---------------------------------------------------------------------------
 
-interface ScoredCountry {
+export interface ScoredCountry {
   country: Country;
   score: number;
   components: {
@@ -154,10 +202,9 @@ function scoreCountry(country: Country, profile: UserProfile): ScoredCountry {
     costRaw: scoreCostRaw(country),
   };
 
-  // Apply importance multipliers to user-controlled weights
   const w = {
-    goal: WEIGHTS.goal, // goal always at full weight
-    budget: WEIGHTS.budget, // budget always at full weight
+    goal: WEIGHTS.goal,
+    budget: WEIGHTS.budget,
     tax: WEIGHTS.tax * importanceMultiplier(profile.taxImportance),
     safety: WEIGHTS.safety * importanceMultiplier(profile.safetyImportance),
     visa: WEIGHTS.visa * importanceMultiplier(profile.visaImportance),
@@ -188,7 +235,7 @@ function scoreCountry(country: Country, profile: UserProfile): ScoredCountry {
 export function getRecommendations(
   profile: UserProfile,
   locale: Locale,
-  topN = 3
+  topN = 5
 ): CountryMatch[] {
   const scored = countries
     .map((c) => scoreCountry(c, profile))
@@ -212,4 +259,19 @@ export function getRecommendations(
       edgeOverNext,
     };
   });
+}
+
+// Get match score for a specific country ISO
+export function getCountryMatchScore(
+  iso: string,
+  profile: UserProfile
+): { score: number; label: string; color: string } | null {
+  const country = countries.find((c) => c.iso_code === iso);
+  if (!country) return null;
+  const scored = scoreCountry(country, profile);
+  const score = scored.score;
+  if (score >= 75) return { score, label: "Great match", color: "emerald" };
+  if (score >= 55) return { score, label: "Good match", color: "cyan" };
+  if (score >= 40) return { score, label: "Moderate match", color: "amber" };
+  return { score, label: "Low match", color: "red" };
 }

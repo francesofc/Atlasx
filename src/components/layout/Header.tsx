@@ -11,6 +11,8 @@ interface HeaderProps {
   activeView: ActiveView;
   onChangeView: (view: ActiveView) => void;
   compareCount?: number;
+  onEditProfile?: () => void;
+  onHelpMeDecide?: () => void;
 }
 
 function GlobeIcon() {
@@ -49,7 +51,16 @@ function StarIcon() {
   );
 }
 
-export default function Header({ activeView, onChangeView, compareCount = 0 }: HeaderProps) {
+function UserIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
+    </svg>
+  );
+}
+
+export default function Header({ activeView, onChangeView, compareCount = 0, onEditProfile, onHelpMeDecide }: HeaderProps) {
   const { locale, setLocale, t } = useI18n();
   const { hasCompletedOnboarding } = useProfile();
 
@@ -113,7 +124,41 @@ export default function Header({ activeView, onChangeView, compareCount = 0 }: H
         </nav>
 
         {/* Right controls */}
-        <div className="pointer-events-auto flex items-center gap-3">
+        <div className="pointer-events-auto flex items-center gap-2">
+          {/* Help me decide button */}
+          {onHelpMeDecide && (
+            <button
+              onClick={onHelpMeDecide}
+              className="flex items-center gap-2 rounded-xl border border-cyan-500/15 bg-cyan-500/[0.06] px-3.5 py-1.5 backdrop-blur-xl shadow-lg shadow-black/20 transition-all hover:border-cyan-500/25 hover:bg-cyan-500/[0.1] hover:shadow-cyan-500/10"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400/70">
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 17h.01" />
+              </svg>
+              <span className="text-[11px] font-medium tracking-wide text-cyan-400/60">Help me decide</span>
+            </button>
+          )}
+
+          {/* Your Profile button */}
+          {onEditProfile && (
+            <button
+              onClick={onEditProfile}
+              className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 backdrop-blur-xl shadow-lg shadow-black/20 transition-all ${
+                hasCompletedOnboarding
+                  ? "border-emerald-500/15 bg-emerald-500/[0.06] hover:border-emerald-500/25 hover:bg-emerald-500/[0.1]"
+                  : "border-white/[0.08] bg-white/[0.04] hover:border-white/15 hover:bg-white/[0.08]"
+              }`}
+            >
+              <span className={hasCompletedOnboarding ? "text-emerald-400/70" : "text-white/40"}>
+                <UserIcon />
+              </span>
+              <span className={`text-[11px] font-medium tracking-wide ${hasCompletedOnboarding ? "text-emerald-400/60" : "text-white/35"}`}>
+                {hasCompletedOnboarding ? "Profile" : "Set up profile"}
+              </span>
+            </button>
+          )}
+
           {/* Language switcher */}
           <div className="flex items-center rounded-xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl shadow-lg shadow-black/20">
             {locales.map((loc) => (
@@ -130,14 +175,6 @@ export default function Header({ activeView, onChangeView, compareCount = 0 }: H
                 {LOCALE_LABELS[loc]}
               </button>
             ))}
-          </div>
-
-          {/* Status indicator */}
-          <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 backdrop-blur-xl shadow-lg shadow-black/20">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400/80 animate-pulse" />
-            <span className="text-[11px] font-medium tracking-wide text-white/40">
-              {t.app.live}
-            </span>
           </div>
         </div>
       </div>

@@ -133,27 +133,34 @@ export function generateInsights(
   }
 
   // --- GOAL-SPECIFIC ---
-  if (profile.goal === "business" && country.tax.level === "low") {
+  const goals = profile.goals && profile.goals.length > 0 ? profile.goals : [profile.goal];
+  if (goals.includes("business") && country.tax.level === "low") {
     insights.push({ type: "positive", text: t.goal_business_tax });
   }
-  if (profile.goal === "expatriation" && country.visa.ease_of_access === "easy" && country.safety.safety_index >= 55) {
+  if (goals.includes("low_taxes" as any) && country.tax.level === "low") {
+    insights.push({ type: "positive", text: t.goal_business_tax });
+  }
+  if ((goals.includes("expatriation" as any) || goals.includes("quality_of_life" as any)) && country.visa.ease_of_access === "easy" && country.safety.safety_index >= 55) {
     insights.push({ type: "positive", text: t.goal_expat_friendly });
   }
-  if (profile.goal === "expatriation" && profile.familyStatus === "family" && country.safety.safety_index >= 60) {
+  if ((goals.includes("expatriation" as any) || goals.includes("quality_of_life" as any)) && profile.familyStatus === "family" && country.safety.safety_index >= 60) {
     insights.push({ type: "positive", text: t.goal_family_safe });
   }
-  if (profile.goal === "investment" && country.economy.gdp > 1000) {
+  if (goals.includes("investment") && country.economy.gdp > 1000) {
     insights.push({ type: "positive", text: fill(t.goal_investment_gdp, { gdp: Math.round(country.economy.gdp) }) });
   }
-  if (profile.goal === "exploration" && country.cost_of_living.index <= 35) {
+  if ((goals.includes("exploration" as any) || goals.includes("save_money" as any)) && country.cost_of_living.index <= 35) {
     insights.push({ type: "positive", text: t.goal_explore_cheap });
+  }
+  if (goals.includes("remote_work" as any) && country.visa.ease_of_access === "easy" && country.cost_of_living.index <= 50) {
+    insights.push({ type: "positive", text: "Great destination for remote workers — easy visa and affordable living." });
   }
 
   // --- INFRASTRUCTURE / LANGUAGE tradeoffs ---
   if (country.cost_of_living.index <= 30 && country.safety.safety_index < 50) {
     insights.push({ type: "tradeoff", text: t.tradeoff_infrastructure });
   }
-  if (country.cost_of_living.average_salary < 600 && profile.goal === "business") {
+  if (country.cost_of_living.average_salary < 600 && goals.includes("business")) {
     insights.push({ type: "tradeoff", text: t.tradeoff_local_purchasing });
   }
 

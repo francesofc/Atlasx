@@ -1,17 +1,14 @@
-export type Goal = "expatriation" | "business" | "investment" | "exploration";
-export type ClimatePreference = "tropical" | "temperate" | "continental" | "arid" | "any";
+export type Goal = "low_taxes" | "save_money" | "quality_of_life" | "business" | "remote_work" | "investment";
+export type ClimatePreference = "warm" | "mild" | "cold" | "any";
 export type ImportanceLevel = 1 | 2 | 3 | 4 | 5;
 export type FamilyStatus = "single" | "couple" | "family";
-export type BudgetRange = "under_1000" | "1000_2000" | "2000_4000" | "4000_plus";
-export type IncomeRange = "under_2000" | "2000_5000" | "5000_10000" | "10000_plus";
+export type BudgetRange = "under_1000" | "1000_3000" | "3000_5000" | "5000_plus";
 
 export interface UserProfile {
   nationality: string;
   currentCountry: string;
-  preferredLanguage: string;
   budgetRange: BudgetRange;
-  incomeRange: IncomeRange;
-  goal: Goal;
+  goals: Goal[]; // multi-select
   climatePreference: ClimatePreference;
   taxImportance: ImportanceLevel;
   safetyImportance: ImportanceLevel;
@@ -19,6 +16,8 @@ export interface UserProfile {
   visaImportance: ImportanceLevel;
   familyStatus: FamilyStatus;
   businessSector: string;
+  // Legacy compat — derived from goals for systems that use single goal
+  goal: Goal;
 }
 
 // A single contextual insight — generated dynamically, not a static key
@@ -38,10 +37,9 @@ export interface CountryMatch {
 export const DEFAULT_PROFILE: UserProfile = {
   nationality: "",
   currentCountry: "",
-  preferredLanguage: "",
-  budgetRange: "2000_4000",
-  incomeRange: "5000_10000",
-  goal: "exploration",
+  budgetRange: "3000_5000",
+  goals: ["quality_of_life"],
+  goal: "quality_of_life",
   climatePreference: "any",
   taxImportance: 3,
   safetyImportance: 3,

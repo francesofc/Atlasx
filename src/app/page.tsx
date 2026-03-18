@@ -137,6 +137,18 @@ export default function Home() {
     setCompareIsos([]);
   }, []);
 
+  // --- Profile editing ---
+  const handleEditProfile = useCallback(() => {
+    setIsOnboardingOpen(true);
+  }, []);
+
+  // --- Help me decide (opens AI with decision prompt) ---
+  const handleHelpMeDecide = useCallback(() => {
+    setIsPanelOpen(false);
+    setIsAIOpen(true);
+    setActiveView("ai");
+  }, []);
+
   // --- Open AI with context ---
   const handleAskAIAbout = useCallback((iso: string) => {
     setIsPanelOpen(false);
@@ -180,7 +192,7 @@ export default function Home() {
         <ParticleField />
       </Suspense>
 
-      <Header activeView={activeView} onChangeView={handleChangeView} compareCount={compareIsos.length} />
+      <Header activeView={activeView} onChangeView={handleChangeView} compareCount={compareIsos.length} onEditProfile={handleEditProfile} onHelpMeDecide={handleHelpMeDecide} />
       <MapView onCountryClick={handleCountryClick} />
 
       <CountryPanel
@@ -205,6 +217,7 @@ export default function Home() {
         isOpen={isOnboardingOpen}
         onClose={handleCloseOnboarding}
         onComplete={handleOnboardingComplete}
+        editMode={hasCompletedOnboarding}
       />
       <ResultsModal
         isOpen={isResultsOpen}

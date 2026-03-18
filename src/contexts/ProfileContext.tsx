@@ -1,7 +1,29 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import type { UserProfile, CountryMatch } from "@/types/profile";
+
+const STORAGE_KEY = "atlas-x-profile";
+const MATCHES_KEY = "atlas-x-matches";
+
+function loadFromStorage<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveToStorage(key: string, value: unknown) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // storage full or blocked
+  }
+}
 
 interface ProfileContextType {
   profile: UserProfile | null;
@@ -27,8 +49,18 @@ const ProfileContext = createContext<ProfileContextType>({
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfileState] = useState<UserProfile | null>(null);
-  const [matches, setMatches] = useState<CountryMatch[]>([]);
+  const [matches, setMatchesState] = useState<CountryMatch[]>([]);
   const [isPremium, setIsPremium] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    const savedProfile = loadFromStorage<UserProfile>(STORAGE_KEY);
+    const savedMatches = loadFromStorage<CountryMatch[]>(MATCHES_KEY);
+    if (savedProfile) setProfileState(savedProfile);
+    if (savedMatches) setMatchesState(savedMatches);
+    setHydrated(true);
+  }, []);
 
   const togglePremium = useCallback(() => {
     setIsPremium((prev) => !prev);
@@ -36,12 +68,25 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   const setProfile = useCallback((p: UserProfile) => {
     setProfileState(p);
+    saveToStorage(STORAGE_KEY, p);
+  }, []);
+
+  const setMatches = useCallback((m: CountryMatch[]) => {
+    setMatchesState(m);
+    saveToStorage(MATCHES_KEY, m);
   }, []);
 
   const clearProfile = useCallback(() => {
     setProfileState(null);
-    setMatches([]);
+    setMatchesState([]);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(MATCHES_KEY);
+    }
   }, []);
+
+  // Don't render until hydrated to avoid flicker
+  if (!hydrated) return null;
 
   return (
     <ProfileContext.Provider

@@ -48,9 +48,8 @@ export function buildSystemPrompt(ctx: AIContext): string {
 You provide structured, data-driven analysis on countries, relocation, investment, and business strategy.
 
 USER PROFILE:
-- Goal: ${profile.goal}
+- Goals: ${(profile.goals || [profile.goal]).map(goalLabel).join(", ")}
 - Budget: ${profile.budgetRange}
-- Income: ${profile.incomeRange}
 - Family: ${profile.familyStatus}
 - Climate preference: ${profile.climatePreference}
 - Priorities: Tax ${profile.taxImportance}/5 | Safety ${profile.safetyImportance}/5 | Cost ${profile.costImportance}/5 | Visa ${profile.visaImportance}/5
@@ -149,12 +148,17 @@ export function getSuggestedPrompts(ctx: AIContext): string[] {
   prompts.push(tpl("bestForYou", locale));
 
   // Goal-specific prompt
-  if (ctx.profile.goal === "business") {
+  const goals = ctx.profile.goals || [ctx.profile.goal];
+  if (goals.includes("business")) {
     prompts.push(tpl("businessSetup", locale));
-  } else if (ctx.profile.goal === "expatriation" && top) {
-    prompts.push(tpl("relocate", locale, { country: top.name[locale] }));
-  } else if (ctx.profile.goal === "investment") {
+  } else if (goals.includes("remote_work" as any)) {
+    prompts.push(tpl("nomadBest", locale));
+  } else if (goals.includes("investment")) {
     prompts.push(tpl("investmentOutlook", locale));
+  } else if (goals.includes("low_taxes" as any)) {
+    prompts.push(tpl("taxStrategy", locale));
+  } else if (top) {
+    prompts.push(tpl("relocate", locale, { country: top.name[locale] }));
   } else {
     prompts.push(tpl("nomadBest", locale));
   }
@@ -188,9 +192,13 @@ function getName(ctx: AIContext, idx: number): string {
 
 function goalLabel(goal: string): string {
   const labels: Record<string, string> = {
-    expatriation: "expatriation",
+    low_taxes: "low taxes",
+    save_money: "saving money",
+    quality_of_life: "high quality of life",
     business: "business expansion",
+    remote_work: "remote work",
     investment: "investment",
+    expatriation: "expatriation",
     exploration: "exploration",
   };
   return labels[goal] || goal;
@@ -200,8 +208,11 @@ function budgetLabel(range: string): string {
   const labels: Record<string, string> = {
     under_1000: "under $1,000/month",
     "1000_2000": "$1,000–$2,000/month",
+    "1000_3000": "$1,000–$3,000/month",
     "2000_4000": "$2,000–$4,000/month",
+    "3000_5000": "$3,000–$5,000/month",
     "4000_plus": "$4,000+/month",
+    "5000_plus": "$5,000+/month",
   };
   return labels[range] || range;
 }
@@ -326,7 +337,7 @@ function profileScore(c: Country, ctx: AIContext): number {
   // Climate match
   const climDesc = c.climate.description.en.toLowerCase();
   if (p.climatePreference !== "any") {
-    if (climDesc.includes(p.climatePreference) || (p.climatePreference === "tropical" && climDesc.includes("hot"))) score += 10;
+    if (climDesc.includes(p.climatePreference) || (p.climatePreference === "warm" && climDesc.includes("hot"))) score += 10;
   }
 
   // GDP per capita bonus
@@ -503,8 +514,8 @@ function generateCountryDeepDive(c: Country, ctx: AIContext): string {
       `Key exports: ${c.economy.main_exports.slice(0, 4).join(", ")}`,
       `Industries: ${c.main_industries.slice(0, 4).join(", ")}`,
       `Stability: **${c.government.political_stability}** political environment`,
-      ctx.profile.goal === "business" ? `Business: ${c.tax.corporate_tax} corporate tax in a ${c.government.political_stability} economy` :
-      ctx.profile.goal === "expatriation" ? `Expat: ${c.visa.ease_of_access} visa with ${c.visa.residency_options.split(",")[0]} pathway` :
+      (ctx.profile.goals || [ctx.profile.goal]).includes("business") ? `Business: ${c.tax.corporate_tax} corporate tax in a ${c.government.political_stability} economy` :
+      (ctx.profile.goals || [ctx.profile.goal]).includes("quality_of_life" as any) ? `Quality of life: ${c.visa.ease_of_access} visa with ${c.visa.residency_options.split(",")[0]} pathway` :
       `Profile fit: ${c.cost_of_living.index <= 45 ? "Affordable" : "Premium"} lifestyle with ${c.safety.safety_index >= 60 ? "strong" : "adequate"} safety`,
     ],
     tradeoffs: tradeoffs.length > 0 ? tradeoffs : ["No major concerns for your profile"],
@@ -805,7 +816,7 @@ function generateClimateResponse(ctx: AIContext): string {
     dataTable: ctx.countries.map((c) => {
       const desc = c.climate.description.en.toLowerCase();
       const pref = ctx.profile.climatePreference;
-      const match = pref === "any" || desc.includes(pref) || (pref === "tropical" && desc.includes("hot"));
+      const match = pref === "any" || desc.includes(pref) || (pref === "warm" && (desc.includes("hot") || desc.includes("tropical")));
       return {
         label: `${match ? "✅" : "⚠️"} ${c.name[locale]}`,
         value: `${c.climate.average_temp} avg | ${c.climate.seasons} | ${c.climate.description[locale].slice(0, 50)}`,

@@ -116,17 +116,24 @@
       "business_sector_placeholder": "Opcional — descreva seu campo ou ideia"
     },
     "goals": {
+      "low_taxes": "Pagar menos impostos",
+      "save_money": "Economizar dinheiro",
+      "quality_of_life": "Alta qualidade de vida",
+      "business": "Criar um negócio",
+      "remote_work": "Trabalho remoto",
+      "investment": "Oportunidades de investimento",
       "expatriation": "Expatriação",
-      "business": "Expansão de negócios",
-      "investment": "Investimento",
       "exploration": "Exploração geral"
     },
     "climates": {
+      "warm": "Quente",
+      "mild": "Ameno",
+      "cold": "Frio",
+      "any": "Sem preferência",
       "tropical": "Tropical",
       "temperate": "Temperado",
       "continental": "Continental",
-      "arid": "Árido / Deserto",
-      "any": "Sem preferência"
+      "arid": "Árido / Deserto"
     },
     "family": {
       "single": "Solteiro/a",
@@ -135,6 +142,9 @@
     },
     "budget": {
       "under_1000": "Menos de $1.000",
+      "1000_3000": "$1.000 – $3.000",
+      "3000_5000": "$3.000 – $5.000",
+      "5000_plus": "$5.000+",
       "1000_2000": "$1.000 – $2.000",
       "2000_4000": "$2.000 – $4.000",
       "4000_plus": "$4.000+"

@@ -4,6 +4,8 @@ import { useEffect, useRef, useMemo, useState } from "react";
 import type { CountryInfo } from "@/types";
 import { getCountryByIso, getCountryByName, type Country } from "@/data/countries";
 import { useI18n } from "@/contexts/I18nContext";
+import { useProfile } from "@/contexts/ProfileContext";
+import { getCountryMatchScore } from "@/lib/recommend";
 
 interface CountryPanelProps {
   country: CountryInfo | null;
@@ -209,11 +211,17 @@ const S = 80;
 export default function CountryPanel({ country, isOpen, onClose, onAddToCompare, onAskAI }: CountryPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const { locale, t } = useI18n();
+  const { profile } = useProfile();
 
   const data: Country | undefined = useMemo(() => {
     if (!country) return undefined;
     return getCountryByIso(country.iso) || getCountryByName(country.name);
   }, [country]);
+
+  const matchInfo = useMemo(() => {
+    if (!data || !profile) return null;
+    return getCountryMatchScore(data.iso_code, profile);
+  }, [data, profile]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -262,6 +270,24 @@ export default function CountryPanel({ country, isOpen, onClose, onAddToCompare,
             <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-white/90">
               {data ? data.name[locale] : country?.name || "—"}
             </h2>
+            {matchInfo && (
+              <div className="mt-1.5 flex items-center gap-2">
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${
+                  matchInfo.color === "emerald" ? "border-emerald-500/20 bg-emerald-500/[0.08] text-emerald-400/80" :
+                  matchInfo.color === "cyan" ? "border-cyan-500/20 bg-cyan-500/[0.08] text-cyan-400/80" :
+                  matchInfo.color === "amber" ? "border-amber-500/20 bg-amber-500/[0.08] text-amber-400/80" :
+                  "border-red-500/20 bg-red-500/[0.08] text-red-400/80"
+                }`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${
+                    matchInfo.color === "emerald" ? "bg-emerald-400" :
+                    matchInfo.color === "cyan" ? "bg-cyan-400" :
+                    matchInfo.color === "amber" ? "bg-amber-400" :
+                    "bg-red-400"
+                  }`} />
+                  {matchInfo.score}% — {matchInfo.label}
+                </span>
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}

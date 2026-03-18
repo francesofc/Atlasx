@@ -37,7 +37,7 @@ function LockIcon({ size = 14 }: { size?: number }) {
 
 function useDemoContext() {
   const { locale } = useI18n();
-  const demoProfile = { ...DEFAULT_PROFILE, goal: "exploration" as const };
+  const demoProfile = { ...DEFAULT_PROFILE, goal: "quality_of_life" as const, goals: ["quality_of_life" as const] };
   const demoCountries = countries.slice(0, 5);
   const demoMatches = demoCountries.map((c, i) => ({
     iso_code: c.iso_code,
