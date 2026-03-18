@@ -277,11 +277,38 @@ export default function CountryPanel({ country, isOpen, onClose, onAddToCompare,
         {/* Scrollable content */}
         <div className="h-[calc(100%-68px)] overflow-y-auto px-7 py-5 scrollbar-thin">
           {!data ? (
-            <div className="flex flex-col items-center justify-center pt-20 text-center ax-section-in">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.02]">
-                {icons.overview}
+            <div className="flex flex-col items-center justify-center pt-16 text-center ax-section-in">
+              {/* Premium "data being compiled" state */}
+              <div className="relative mb-5">
+                <div className="absolute inset-0 rounded-2xl bg-violet-500/10 blur-xl ax-breathe" />
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-white/[0.01]">
+                  {icons.overview}
+                </div>
               </div>
-              <p className="text-sm text-white/30">{t.panel.not_found}</p>
+              <h3 className="text-sm font-semibold text-white/50 mb-1">
+                {country?.name || "Country"}
+              </h3>
+              <p className="text-[11px] text-white/25 mb-5 max-w-[240px]">
+                {t.panel.not_found || "Detailed intelligence data is being compiled for this region."}
+              </p>
+              <div className="flex gap-2">
+                {onAddToCompare && country?.iso && (
+                  <button
+                    onClick={() => onAddToCompare(country.iso)}
+                    className="ax-btn flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[11px] text-white/40 hover:border-violet-500/25 hover:text-violet-400/70"
+                  >
+                    Compare
+                  </button>
+                )}
+                {onAskAI && country?.iso && (
+                  <button
+                    onClick={() => onAskAI(country.iso)}
+                    className="ax-btn flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[11px] text-white/40 hover:border-cyan-500/25 hover:text-cyan-400/70"
+                  >
+                    Ask AI
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-5" key={data.iso_code}>

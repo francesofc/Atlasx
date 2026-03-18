@@ -133,6 +133,10 @@ export default function Home() {
     setIsPanelOpen(false);
   }, []);
 
+  const handleClearCompare = useCallback(() => {
+    setCompareIsos([]);
+  }, []);
+
   // --- Open AI with context ---
   const handleAskAIAbout = useCallback((iso: string) => {
     setIsPanelOpen(false);
@@ -194,6 +198,7 @@ export default function Home() {
         compareIsos={compareIsos}
         onRemoveCountry={handleRemoveFromCompare}
         onAddSlot={handleAddSlot}
+        onClearAll={handleClearCompare}
       />
 
       <OnboardingModal

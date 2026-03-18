@@ -10,6 +10,7 @@ interface ComparePanelProps {
   compareIsos: string[];
   onRemoveCountry: (iso: string) => void;
   onAddSlot: () => void;
+  onClearAll?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -52,7 +53,47 @@ function XIcon({ size = 10 }: { size?: number }) {
   );
 }
 
-export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCountry, onAddSlot }: ComparePanelProps) {
+function TrashIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+      <defs>
+        <linearGradient id="globe-grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="rgb(139,92,246)" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="rgb(6,182,212)" stopOpacity="0.6" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="10" stroke="url(#globe-grad)" />
+      <path d="M2 12h20" stroke="url(#globe-grad)" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="url(#globe-grad)" />
+    </svg>
+  );
+}
+
+// Visual bar for numeric comparison
+function CompareBar({ value, max, isBest, isWorst }: { value: number; max: number; isBest: boolean; isWorst: boolean }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  const color = isBest ? "bg-emerald-400/60" : isWorst ? "bg-red-400/50" : "bg-white/20";
+
+  return (
+    <div className="w-[75%] mx-auto mt-1 h-[3px] rounded-full bg-white/[0.05]">
+      <div
+        className={`h-full rounded-full ${color} transition-all duration-700 ease-out`}
+        style={{ width: `${pct}%` }}
+      />
+    </div>
+  );
+}
+
+export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCountry, onAddSlot, onClearAll }: ComparePanelProps) {
   const { locale, t } = useI18n();
   const { matches } = useProfile();
   const cmpT = (t as Record<string, unknown>).compare_panel as Record<string, unknown> | undefined;
@@ -85,6 +126,20 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
     if (val === best && best !== worst) return "bg-emerald-500/[0.04]";
     if (val === worst && best !== worst) return "bg-red-500/[0.03]";
     return "";
+  }
+
+  function getBarProps(field: CompareField, country: Country) {
+    const vals = activeCountries.map((c) => field.getNumeric(c));
+    const val = field.getNumeric(country);
+    const maxVal = Math.max(...vals);
+    const best = field.higherIsBetter ? Math.max(...vals) : Math.min(...vals);
+    const worst = field.higherIsBetter ? Math.min(...vals) : Math.max(...vals);
+    return {
+      value: val,
+      max: maxVal || 1,
+      isBest: val === best && best !== worst,
+      isWorst: val === worst && best !== worst,
+    };
   }
 
   return (
@@ -120,6 +175,15 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
                 <span>{(cmpT?.add_country as string) || "Add Country"}</span>
               </button>
             )}
+            {hasCountries && onClearAll && (
+              <button
+                onClick={onClearAll}
+                className="ax-btn flex items-center gap-1.5 rounded-lg border border-red-500/15 bg-red-500/[0.04] px-3 py-1.5 text-[10px] font-medium text-red-400/50 hover:border-red-500/30 hover:text-red-400/80 hover:bg-red-500/[0.08] transition-colors"
+              >
+                <TrashIcon />
+                <span>Clear All</span>
+              </button>
+            )}
             <button
               onClick={onClose}
               className="ax-btn flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.08] text-white/30 hover:border-white/20 hover:text-white/60"
@@ -131,21 +195,30 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
 
         {/* Content */}
         {!hasCountries ? (
-          <div className="px-6 py-12 text-center">
-            <div className="flex justify-center gap-3 mb-4">
+          <div className="px-6 py-14 text-center">
+            {/* Premium empty state */}
+            <div className="relative inline-flex items-center justify-center mb-5">
+              <div className="absolute inset-0 rounded-full bg-violet-500/10 blur-xl ax-breathe" />
+              <GlobeIcon />
+            </div>
+            <h3 className="text-sm font-semibold text-white/60 mb-1.5">Start Comparing</h3>
+            <p className="text-[11px] text-white/25 mb-6 max-w-xs mx-auto">
+              Select countries from the map or use the panel to build your comparison
+            </p>
+            <div className="flex justify-center gap-3">
               {[1, 2, 3, 4].map((i) => (
-                <div
+                <button
                   key={i}
-                  className="flex h-16 w-16 items-center justify-center rounded-xl border border-dashed border-white/[0.08] bg-white/[0.01] text-white/10 ax-section-in transition-transform hover:scale-105 hover:border-white/[0.15]"
+                  onClick={onAddSlot}
+                  className="flex h-16 w-16 items-center justify-center rounded-xl border border-dashed border-white/[0.08] bg-white/[0.01] text-white/10 ax-section-in transition-all hover:scale-110 hover:border-violet-500/20 hover:text-violet-400/40 hover:bg-violet-500/[0.03]"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
-                  <PlusIcon />
-                </div>
+                  <div className="animate-pulse" style={{ animationDelay: `${i * 600}ms`, animationDuration: "2.5s" }}>
+                    <PlusIcon />
+                  </div>
+                </button>
               ))}
             </div>
-            <p className="text-[12px] text-white/25">
-              {(cmpT?.from_map as string) || "Click a country on the map to add it"}
-            </p>
           </div>
         ) : (
           <div className="overflow-x-auto scrollbar-thin">
@@ -172,28 +245,39 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
                       </div>
                       <div className="text-[10px] font-mono text-white/20 mt-0.5">{c.iso_code}</div>
                       {matchScore !== undefined && (
-                        <div className="mt-1 inline-block rounded-full bg-cyan-500/10 px-2 py-0.5 text-[9px] font-medium text-cyan-400/60">
-                          Score: {matchScore}
+                        <div className="mt-1.5">
+                          <span className="inline-block rounded-full bg-cyan-500/10 px-2 py-0.5 text-[9px] font-medium text-cyan-400/60">
+                            Score: {matchScore}
+                          </span>
+                          {/* Score bar */}
+                          <div className="w-16 mx-auto mt-1 h-[2px] rounded-full bg-white/[0.05]">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-cyan-500/60 to-violet-500/60 transition-all duration-700 ease-out"
+                              style={{ width: `${matchScore}%` }}
+                            />
+                          </div>
                         </div>
                       )}
                     </div>
                   );
                 })}
-                {/* Empty slots */}
+                {/* Empty slots — clickable with hover effects */}
                 {Array.from({ length: 4 - activeCountries.length }).map((_, i) => (
                   <div key={`empty-${i}`} className="flex-1 px-3 py-3 min-w-[120px]">
                     <button
                       onClick={onAddSlot}
-                      className="w-full flex flex-col items-center justify-center py-2 rounded-lg border border-dashed border-white/[0.06] bg-white/[0.01] text-white/15 transition-all hover:border-white/[0.12] hover:text-white/30 hover:scale-105"
+                      className="w-full flex flex-col items-center justify-center py-3 rounded-xl border border-dashed border-white/[0.06] bg-white/[0.01] text-white/12 transition-all hover:border-violet-500/20 hover:text-violet-400/30 hover:bg-violet-500/[0.02] hover:scale-105"
                     >
-                      <PlusIcon />
-                      <span className="text-[9px] mt-1">{(cmpT?.add_country as string) || "Add"}</span>
+                      <div className="animate-pulse" style={{ animationDuration: "2.5s", animationDelay: `${i * 400}ms` }}>
+                        <PlusIcon />
+                      </div>
+                      <span className="text-[9px] mt-1 opacity-50">{(cmpT?.add_country as string) || "Add"}</span>
                     </button>
                   </div>
                 ))}
               </div>
 
-              {/* Data rows — with staggered reveal */}
+              {/* Data rows — with staggered reveal + visual bars */}
               {COMPARE_FIELDS.map((field, fi) => (
                 <div
                   key={field.key}
@@ -203,14 +287,25 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
                   <div className="w-[140px] shrink-0 px-4 py-2.5 text-[11px] text-white/35 font-medium">
                     {fieldsT[field.key] || field.key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </div>
-                  {activeCountries.map((c) => (
-                    <div
-                      key={c.iso_code}
-                      className={`flex-1 px-3 py-2.5 text-center text-[11px] font-medium min-w-[120px] transition-colors ${getCellColor(field, c)} ${getCellBg(field, c)}`}
-                    >
-                      {field.getValue(c)}
-                    </div>
-                  ))}
+                  {activeCountries.map((c) => {
+                    const barProps = activeCountries.length >= 2 ? getBarProps(field, c) : null;
+                    return (
+                      <div
+                        key={c.iso_code}
+                        className={`flex-1 px-3 py-2.5 text-center min-w-[120px] transition-colors ${getCellColor(field, c)} ${getCellBg(field, c)}`}
+                      >
+                        <span className="text-[11px]">{field.getValue(c)}</span>
+                        {barProps && (
+                          <CompareBar
+                            value={barProps.value}
+                            max={barProps.max}
+                            isBest={barProps.isBest}
+                            isWorst={barProps.isWorst}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                   {Array.from({ length: 4 - activeCountries.length }).map((_, i) => (
                     <div key={`empty-${i}`} className="flex-1 px-3 py-2.5 text-center text-[11px] text-white/10 min-w-[120px]">
                       —

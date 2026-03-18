@@ -65,11 +65,11 @@ export default function MapView({ onCountryClick }: MapViewProps) {
     mapInstance.on("style.load", () => {
       // Atmosphere / fog for premium globe feel
       mapInstance.setFog({
-        color: "rgb(10, 10, 15)",
-        "high-color": "rgb(20, 20, 30)",
+        color: "rgb(10, 8, 20)",
+        "high-color": "rgb(40, 25, 70)",
         "horizon-blend": 0.08,
-        "space-color": "rgb(5, 5, 10)",
-        "star-intensity": 0.4,
+        "space-color": "rgb(3, 3, 10)",
+        "star-intensity": 0.75,
       });
 
       // Add country boundaries vector source (not included in dark-v11 by default)

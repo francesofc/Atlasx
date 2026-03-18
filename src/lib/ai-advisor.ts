@@ -68,28 +68,116 @@ Rules: Always reference specific data. Be structured and concise. Tailor to the 
 // Suggested prompts — context-aware
 // ---------------------------------------------------------------------------
 
+// Locale-aware prompt labels
+const promptTemplates: Record<string, Record<string, string>> = {
+  compare: {
+    en: "Compare {a} vs {b}",
+    fr: "Comparer {a} vs {b}",
+    es: "Comparar {a} vs {b}",
+    pt: "Comparar {a} vs {b}",
+  },
+  deepDive: {
+    en: "Deep dive into {country}",
+    fr: "Analyse approfondie de {country}",
+    es: "Análisis profundo de {country}",
+    pt: "Análise aprofundada de {country}",
+  },
+  safest: {
+    en: "Which country is safest for families?",
+    fr: "Quel pays est le plus sûr pour les familles ?",
+    es: "¿Cuál es el país más seguro para familias?",
+    pt: "Qual país é mais seguro para famílias?",
+  },
+  cheapest: {
+    en: "Most affordable country for my budget",
+    fr: "Pays le plus abordable pour mon budget",
+    es: "País más económico para mi presupuesto",
+    pt: "País mais acessível para meu orçamento",
+  },
+  taxStrategy: {
+    en: "Best tax optimization strategy",
+    fr: "Meilleure stratégie d'optimisation fiscale",
+    es: "Mejor estrategia de optimización fiscal",
+    pt: "Melhor estratégia de otimização fiscal",
+  },
+  visaEasiest: {
+    en: "Easiest visa pathway for expats",
+    fr: "Visa le plus facile pour les expatriés",
+    es: "Visa más fácil para expatriados",
+    pt: "Visto mais fácil para expatriados",
+  },
+  nomadBest: {
+    en: "Best country for digital nomads under $3,000/month",
+    fr: "Meilleur pays pour les nomades numériques à moins de 3 000$/mois",
+    es: "Mejor país para nómadas digitales con menos de $3,000/mes",
+    pt: "Melhor país para nômades digitais com menos de $3.000/mês",
+  },
+  businessSetup: {
+    en: "Best country for low corporate tax & stability",
+    fr: "Meilleur pays pour faible impôt et stabilité",
+    es: "Mejor país para impuestos bajos y estabilidad",
+    pt: "Melhor país para impostos baixos e estabilidade",
+  },
+  investmentOutlook: {
+    en: "Investment outlook and economic growth potential",
+    fr: "Perspectives d'investissement et potentiel de croissance",
+    es: "Perspectiva de inversión y potencial de crecimiento",
+    pt: "Perspectiva de investimento e potencial de crescimento",
+  },
+  geopolitics: {
+    en: "Geopolitical risks to consider",
+    fr: "Risques géopolitiques à considérer",
+    es: "Riesgos geopolíticos a considerar",
+    pt: "Riscos geopolíticos a considerar",
+  },
+};
+
+function tpl(key: string, locale: string, vars?: Record<string, string>): string {
+  let text = promptTemplates[key]?.[locale] || promptTemplates[key]?.en || key;
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      text = text.replace(`{${k}}`, v);
+    }
+  }
+  return text;
+}
+
 export function getSuggestedPrompts(ctx: AIContext): string[] {
   const top = ctx.countries[0];
   const second = ctx.countries[1];
-
+  const locale = ctx.locale;
   const prompts: string[] = [];
 
+  // 1. Comparison prompt if we have 2+ countries
   if (top && second) {
-    prompts.push(`Compare ${top.name[ctx.locale]} vs ${second.name[ctx.locale]}`);
+    prompts.push(tpl("compare", locale, { a: top.name[locale], b: second.name[locale] }));
   }
 
+  // 2. Goal-specific prompt
   if (ctx.profile.goal === "business") {
-    prompts.push("Best country for low corporate tax and political stability");
+    prompts.push(tpl("businessSetup", locale));
   } else if (ctx.profile.goal === "expatriation") {
-    prompts.push("Which country has the easiest visa pathway for expats?");
+    prompts.push(tpl("visaEasiest", locale));
+  } else if (ctx.profile.goal === "investment") {
+    prompts.push(tpl("investmentOutlook", locale));
   } else {
-    prompts.push("Best country for digital nomads under $3,000/month");
+    prompts.push(tpl("nomadBest", locale));
   }
 
-  prompts.push("Which country is safest for families?");
+  // 3. Personalized based on priorities
+  if (ctx.profile.safetyImportance >= 4) {
+    prompts.push(tpl("safest", locale));
+  } else if (ctx.profile.costImportance >= 4) {
+    prompts.push(tpl("cheapest", locale));
+  } else if (ctx.profile.taxImportance >= 4) {
+    prompts.push(tpl("taxStrategy", locale));
+  } else {
+    prompts.push(tpl("geopolitics", locale));
+  }
 
+  // 4. Deep dive into top match
   if (top) {
-    prompts.push(`Tell me about ${top.name[ctx.locale]}'s economy in depth`);
+    prompts.push(tpl("deepDive", locale, { country: top.name[locale] }));
   }
 
   return prompts.slice(0, 4);
@@ -514,21 +602,45 @@ ${ctx.countries.map((c) => `**${c.name[ctx.locale]}**
   },
 ];
 
+// Locale-aware fallback greeting
+const fallbackGreeting: Record<string, string> = {
+  en: "I'm Atlas AI — your geopolitical intelligence advisor. Ask me to analyze any country, compare destinations, or get tailored strategies for relocation, business, or investment.",
+  fr: "Je suis Atlas AI — votre conseiller en intelligence géopolitique. Demandez-moi d'analyser un pays, comparer des destinations ou obtenir des stratégies personnalisées.",
+  es: "Soy Atlas AI — tu asesor de inteligencia geopolítica. Pídeme analizar cualquier país, comparar destinos u obtener estrategias personalizadas.",
+  pt: "Sou Atlas AI — seu consultor de inteligência geopolítica. Peça-me para analisar qualquer país, comparar destinos ou obter estratégias personalizadas.",
+};
+
+const fallbackSuggestions: Record<string, string[]> = {
+  en: ["Compare UAE vs Portugal", "Best country for digital nomads", "Analyze Japan's economy", "Which country is safest?"],
+  fr: ["Comparer les EAU vs Portugal", "Meilleur pays pour les nomades numériques", "Analyser l'économie du Japon", "Quel pays est le plus sûr ?"],
+  es: ["Comparar EAU vs Portugal", "Mejor país para nómadas digitales", "Analizar la economía de Japón", "¿Cuál país es el más seguro?"],
+  pt: ["Comparar EAU vs Portugal", "Melhor país para nômades digitais", "Analisar a economia do Japão", "Qual país é mais seguro?"],
+};
+
 function fallback(ctx: AIContext): string {
   const top = ctx.countries[0];
   const m = ctx.matches[0];
-  if (!top || !m) return "I'm Atlas AI — your geopolitical intelligence advisor. Ask me to analyze any country, compare destinations, or get tailored strategies for relocation, business, or investment. Try asking:\n\n• \"Compare UAE vs Portugal\"\n• \"Best country for digital nomads\"\n• \"Analyze Japan's economy\"\n• \"Which country is safest?\"";
+  const locale = ctx.locale;
 
-  return `## Your Intelligence Summary
+  if (!top || !m) {
+    const greeting = fallbackGreeting[locale] || fallbackGreeting.en;
+    const suggestions = fallbackSuggestions[locale] || fallbackSuggestions.en;
+    return `${greeting}\n\n${suggestions.map((s) => `• "${s}"`).join("\n")}`;
+  }
 
-**Profile**: ${goalLabel(ctx.profile.goal)} | Budget: ${budgetLabel(ctx.profile.budgetRange)} | Family: ${ctx.profile.familyStatus}
+  const profileLabel = locale === "fr" ? "Profil" : locale === "es" ? "Perfil" : locale === "pt" ? "Perfil" : "Profile";
+  const topMatchLabel = locale === "fr" ? "Meilleur match" : locale === "es" ? "Mejor coincidencia" : locale === "pt" ? "Melhor combinação" : "Top match";
 
-**Top match**: **${top.name[ctx.locale]}** (${m.score}/100)
+  return `## ${locale === "fr" ? "Votre Résumé" : locale === "es" ? "Su Resumen" : locale === "pt" ? "Seu Resumo" : "Your Intelligence Summary"}
+
+**${profileLabel}**: ${goalLabel(ctx.profile.goal)} | Budget: ${budgetLabel(ctx.profile.budgetRange)} | ${ctx.profile.familyStatus}
+
+**${topMatchLabel}**: **${top.name[locale]}** (${m.score}/100)
 ${m.insights.filter((i) => i.type === "positive").slice(0, 3).map((p) => `✅ ${p.text}`).join("\n")}
 
 **Quick stats**: GDP $${top.economy.gdp}B | Safety ${top.safety.safety_index}/100 | Tax: ${top.tax.level} | Cost: ${top.cost_of_living.index}
 
-Ask me to deep-dive into any country, compare options, or analyze specific factors like taxes, visas, safety, economy, or geopolitics.`;
+${locale === "fr" ? "Demandez-moi d'approfondir un pays, comparer des options ou analyser des facteurs spécifiques." : locale === "es" ? "Pídeme profundizar en un país, comparar opciones o analizar factores específicos." : locale === "pt" ? "Peça-me para aprofundar em um país, comparar opções ou analisar fatores específicos." : "Ask me to deep-dive into any country, compare options, or analyze specific factors like taxes, visas, safety, economy, or geopolitics."}`;
 }
 
 /**
