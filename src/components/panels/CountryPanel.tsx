@@ -242,7 +242,7 @@ export default function CountryPanel({ country, isOpen, onClose, onAddToCompare,
         className={`
           fixed right-0 top-0 z-50 h-full w-full max-w-md
           border-l border-white/[0.08]
-          bg-gradient-to-b from-[#0a0a12]/95 to-[#0e0e18]/95
+          bg-gradient-to-b from-[#0c0c18]/96 to-[#10101e]/96
           backdrop-blur-2xl
           shadow-2xl shadow-black/60
           transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
@@ -488,6 +488,40 @@ export default function CountryPanel({ country, isOpen, onClose, onAddToCompare,
                   </span>
                 </DataRow>
               </Section>
+
+              {/* Engagement loop — suggested next actions */}
+              <div className="border-t border-white/[0.04] pt-5 pb-1 ax-section-in" style={{ animationDelay: `${S * 11}ms` }}>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-white/20 mb-3">What would you like to do?</p>
+                <div className="space-y-2">
+                  {onAddToCompare && (
+                    <button
+                      onClick={() => onAddToCompare(data.iso_code)}
+                      className="w-full text-left rounded-xl border border-violet-500/10 bg-violet-500/[0.03] px-3.5 py-2.5 text-[11px] text-violet-400/50 transition-all hover:border-violet-500/20 hover:bg-violet-500/[0.06] hover:text-violet-400/75"
+                    >
+                      <span className="text-violet-400/40 mr-2">→</span>
+                      Compare {data.name[locale]} with other countries
+                    </button>
+                  )}
+                  {onAskAI && (
+                    <>
+                      <button
+                        onClick={() => onAskAI(data.iso_code)}
+                        className="w-full text-left rounded-xl border border-cyan-500/10 bg-cyan-500/[0.03] px-3.5 py-2.5 text-[11px] text-cyan-400/50 transition-all hover:border-cyan-500/20 hover:bg-cyan-500/[0.06] hover:text-cyan-400/75"
+                      >
+                        <span className="text-cyan-400/40 mr-2">→</span>
+                        Get a full intelligence briefing on {data.name[locale]}
+                      </button>
+                      <button
+                        onClick={() => onAskAI(data.iso_code)}
+                        className="w-full text-left rounded-xl border border-cyan-500/10 bg-cyan-500/[0.03] px-3.5 py-2.5 text-[11px] text-cyan-400/50 transition-all hover:border-cyan-500/20 hover:bg-cyan-500/[0.06] hover:text-cyan-400/75"
+                      >
+                        <span className="text-cyan-400/40 mr-2">→</span>
+                        Ask AI: &quot;Is {data.name[locale]} right for me?&quot;
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
 
               {/* Bottom spacer */}
               <div className="h-6" />

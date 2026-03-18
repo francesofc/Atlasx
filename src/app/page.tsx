@@ -145,14 +145,14 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-[#030305]">
+    <main className="relative h-screen w-screen overflow-hidden bg-[#060610]">
       {/* === IMMERSIVE BACKGROUND SYSTEM === */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Primary breathing glow — violet/blue */}
         <div
           className="absolute left-1/2 top-1/2 w-[800px] h-[800px] rounded-full ax-breathe ax-gradient-rotate"
           style={{
-            background: "radial-gradient(circle, rgba(139,92,246,0.07) 0%, rgba(59,130,246,0.05) 40%, rgba(6,182,212,0.03) 70%, transparent 100%)",
+            background: "radial-gradient(circle, rgba(139,92,246,0.09) 0%, rgba(59,130,246,0.06) 40%, rgba(6,182,212,0.04) 70%, transparent 100%)",
           }}
         />
         {/* Secondary warm glow — offset, slower */}
