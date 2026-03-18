@@ -1,0 +1,285 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: oklch(0.90 0 0);
+  --primary-foreground: oklch(0.10 0 0);
+  --secondary: oklch(0.18 0 0);
+  --secondary-foreground: oklch(0.90 0 0);
+  --muted: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.55 0 0);
+  --accent: oklch(0.18 0 0);
+  --accent-foreground: oklch(0.90 0 0);
+  --destructive: oklch(0.60 0.20 25);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.55 0 0);
+  --chart-1: oklch(0.80 0.10 252);
+  --chart-2: oklch(0.62 0.21 260);
+  --chart-3: oklch(0.55 0.24 263);
+  --chart-4: oklch(0.49 0.24 264);
+  --chart-5: oklch(0.42 0.20 266);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.10 0 0);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.49 0.24 264);
+  --sidebar-primary-foreground: oklch(0.95 0 0);
+  --sidebar-accent: oklch(0.18 0 0);
+  --sidebar-accent-foreground: oklch(0.90 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.55 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* =========================================================================
+   ATLAS X — Animation System
+   All keyframes & utility classes for the immersive experience.
+   Intensities are controlled via CSS custom properties for easy tweaking.
+   ========================================================================= */
+
+:root {
+  /* --- Tuning knobs (change these to adjust intensity) --- */
+  --ax-glow-intensity: 0.06;       /* background glow opacity 0–1 */
+  --ax-particle-opacity: 0.25;     /* particle max opacity 0–1 */
+  --ax-breathe-scale: 1.08;        /* breathe max scale */
+  --ax-float-distance: 6px;        /* panel float distance */
+  --ax-bar-speed: 1s;              /* progress bar fill speed */
+  --ax-stagger-step: 80ms;         /* stagger delay per section */
+  --ax-click-pulse-scale: 1.04;    /* click pulse max scale */
+}
+
+/* --- Breathing ambient glow --- */
+@keyframes ax-breathe {
+  0%, 100% { opacity: var(--ax-glow-intensity); transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: calc(var(--ax-glow-intensity) * 1.6); transform: translate(-50%, -50%) scale(var(--ax-breathe-scale)); }
+}
+.ax-breathe { animation: ax-breathe 8s ease-in-out infinite; }
+
+/* --- Slow gradient rotation --- */
+@keyframes ax-gradient-rotate {
+  0%   { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+.ax-gradient-rotate { animation: ax-gradient-rotate 30s linear infinite; }
+
+/* --- Floating panels --- */
+@keyframes ax-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(calc(-1 * var(--ax-float-distance))); }
+}
+.ax-float { animation: ax-float 6s ease-in-out infinite; }
+
+/* --- Progress bar fill --- */
+@keyframes ax-bar-fill {
+  from { width: 0%; }
+}
+.ax-bar-fill { animation: ax-bar-fill var(--ax-bar-speed) cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* --- Circular score draw --- */
+@keyframes ax-circle-draw {
+  from { stroke-dashoffset: var(--ax-circumference); }
+}
+.ax-circle-draw { animation: ax-circle-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* --- Number count-up shimmer --- */
+@keyframes ax-shimmer {
+  0%   { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+.ax-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: ax-shimmer 2s ease-in-out;
+}
+
+/* --- Staggered section reveal --- */
+@keyframes ax-section-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ax-section-in {
+  animation: ax-section-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+}
+
+/* --- Modal entrance --- */
+@keyframes ax-modal-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.ax-modal-in {
+  animation: ax-modal-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* --- Click pulse ripple --- */
+@keyframes ax-pulse-ring {
+  0%   { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(var(--ax-click-pulse-scale)); opacity: 0; }
+}
+
+/* --- Particle float --- */
+@keyframes ax-particle {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: var(--ax-particle-opacity); }
+  90%  { opacity: var(--ax-particle-opacity); }
+  100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+}
+
+/* --- Glow border pulse (panels) --- */
+@keyframes ax-border-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0), inset 0 0 0 0 rgba(139, 92, 246, 0); }
+  50%      { box-shadow: 0 0 20px 0 rgba(139, 92, 246, 0.04), inset 0 0 30px 0 rgba(139, 92, 246, 0.02); }
+}
+.ax-border-glow { animation: ax-border-glow 4s ease-in-out infinite; }
+
+/* --- Button gradient shift on hover --- */
+@keyframes ax-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* --- AI typing cursor --- */
+@keyframes ax-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+.ax-cursor::after {
+  content: "▋";
+  display: inline;
+  animation: ax-blink 0.8s step-end infinite;
+  color: rgba(34, 211, 238, 0.6);
+  margin-left: 1px;
+}
+
+/* --- Scrollbar --- */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
+
+/* --- Card hover lift --- */
+.ax-card-hover {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+.ax-card-hover:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+/* --- Interactive button --- */
+.ax-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ax-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(34,211,238,0.1), rgba(139,92,246,0.15));
+  background-size: 200% 200%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.ax-btn:hover::before {
+  opacity: 1;
+  animation: ax-gradient-shift 3s ease infinite;
+}
+.ax-btn:active {
+  transform: scale(0.97);
+}
+
+/* Mapbox overrides for dark theme */
+.mapboxgl-ctrl-group {
+  background: rgba(10, 10, 15, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(12px);
+  border-radius: 10px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.mapboxgl-ctrl-group button {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.mapboxgl-ctrl-group button + button {
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.mapboxgl-ctrl-group button span {
+  filter: invert(1) !important;
+  opacity: 0.5 !important;
+}
+
+.mapboxgl-ctrl-group button:hover span {
+  opacity: 0.8 !important;
+}
+
+/* Hide Mapbox attribution for cleaner UI (keep logo per ToS) */
+.mapboxgl-ctrl-attrib {
+  opacity: 0.3;
+}

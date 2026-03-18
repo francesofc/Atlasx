@@ -1,0 +1,278 @@
+{
+  "app": {
+    "title": "ATLAS X",
+    "live": "EN DIRECT"
+  },
+  "nav": {
+    "explore": "Explorer",
+    "ai_advisor": "Conseiller IA",
+    "compare": "Comparer",
+    "recommendations": "Recommandations"
+  },
+  "panel": {
+    "country": "Pays",
+    "close": "Fermer le panneau",
+    "loading": "Chargement des données...",
+    "not_found": "Aucune donnée disponible pour ce pays.",
+    "action_compare": "Comparer",
+    "action_ask_ai": "Demander à l'IA",
+    "data_unavailable": "Données indisponibles"
+  },
+  "sections": {
+    "overview": "Aperçu",
+    "economy": "Économie",
+    "quality_of_life": "Qualité de vie",
+    "business_tax": "Affaires & Fiscalité",
+    "climate": "Climat",
+    "government": "Gouvernement",
+    "military": "Défense",
+    "demographics": "Démographie"
+  },
+  "fields": {
+    "capital": "Capitale",
+    "population": "Population",
+    "language": "Langue",
+    "gdp": "PIB",
+    "gdp_per_capita": "PIB par habitant",
+    "currency": "Devise",
+    "inflation": "Inflation",
+    "main_exports": "Principales exportations",
+    "main_imports": "Principales importations",
+    "average_salary": "Salaire mensuel moy.",
+    "cost_of_living": "Indice coût de la vie",
+    "safety_index": "Indice de sécurité",
+    "crime_index": "Indice de criminalité",
+    "tax_level": "Niveau fiscal",
+    "income_tax": "Impôt sur le revenu",
+    "corporate_tax": "Impôt sur les sociétés",
+    "visa_difficulty": "Difficulté du visa",
+    "residency_options": "Options de résidence",
+    "main_industries": "Industries principales",
+    "climate": "Climat",
+    "average_temp": "Température moy.",
+    "seasons": "Saisons",
+    "government_type": "Type de gouvernement",
+    "current_leader": "Dirigeant actuel",
+    "political_stability": "Stabilité politique",
+    "life_expectancy": "Espérance de vie",
+    "density": "Densité de population",
+    "military_power": "Indice de puissance militaire",
+    "nuclear_weapon": "Capacité nucléaire"
+  },
+  "tax_levels": {
+    "low": "Faible",
+    "medium": "Moyen",
+    "high": "Élevé"
+  },
+  "visa_levels": {
+    "easy": "Facile",
+    "medium": "Moyen",
+    "hard": "Difficile"
+  },
+  "stability_levels": {
+    "stable": "Stable",
+    "moderate": "Modéré",
+    "unstable": "Instable"
+  },
+  "language_switcher": {
+    "label": "Langue"
+  },
+  "cta": {
+    "personalize": "Personnaliser",
+    "personalize_long": "Personnaliser mon expérience"
+  },
+  "onboarding": {
+    "title": "Personnalisez votre expérience",
+    "subtitle": "Parlez-nous de vous pour obtenir des recommandations de pays sur mesure.",
+    "skip": "Passer",
+    "next": "Continuer",
+    "back": "Retour",
+    "finish": "Voir mes résultats",
+    "step": "Étape",
+    "of": "sur",
+    "steps": {
+      "about_you": "À propos de vous",
+      "goals": "Vos objectifs",
+      "priorities": "Vos priorités",
+      "details": "Derniers détails"
+    },
+    "labels": {
+      "nationality": "Nationalité",
+      "nationality_placeholder": "ex. Française, Américaine...",
+      "current_country": "Pays actuel",
+      "current_country_placeholder": "Où vivez-vous actuellement ?",
+      "preferred_language": "Langue préférée",
+      "preferred_language_placeholder": "ex. Français, Anglais...",
+      "budget_range": "Budget mensuel",
+      "income_range": "Revenu mensuel",
+      "goal": "Objectif principal",
+      "climate": "Climat préféré",
+      "tax_importance": "Fiscalité faible",
+      "safety_importance": "Sécurité",
+      "cost_importance": "Coût de vie faible",
+      "visa_importance": "Visa facile",
+      "family_status": "Situation familiale",
+      "business_sector": "Secteur ou projet",
+      "business_sector_placeholder": "Optionnel — décrivez votre domaine ou idée"
+    },
+    "goals": {
+      "expatriation": "Expatriation",
+      "business": "Développement commercial",
+      "investment": "Investissement",
+      "exploration": "Exploration générale"
+    },
+    "climates": {
+      "tropical": "Tropical",
+      "temperate": "Tempéré",
+      "continental": "Continental",
+      "arid": "Aride / Désertique",
+      "any": "Aucune préférence"
+    },
+    "family": {
+      "single": "Célibataire",
+      "couple": "En couple",
+      "family": "Famille"
+    },
+    "budget": {
+      "under_1000": "Moins de 1 000 $",
+      "1000_2000": "1 000 $ – 2 000 $",
+      "2000_4000": "2 000 $ – 4 000 $",
+      "4000_plus": "4 000 $ +"
+    },
+    "income": {
+      "under_2000": "Moins de 2 000 $",
+      "2000_5000": "2 000 $ – 5 000 $",
+      "5000_10000": "5 000 $ – 10 000 $",
+      "10000_plus": "10 000 $ +"
+    },
+    "importance": {
+      "not_important": "Pas important",
+      "very_important": "Très important"
+    }
+  },
+  "results": {
+    "title": "Vos meilleurs pays",
+    "subtitle": "Basé sur vos préférences, voici nos recommandations.",
+    "score": "Score de compatibilité",
+    "why": "Pourquoi ce pays",
+    "tradeoffs": "Compromis",
+    "compare": "Comparer ces pays",
+    "explore": "Explorer en détail",
+    "close": "Fermer",
+    "redo": "Refaire le questionnaire",
+    "reasons": {
+      "reason_low_tax": "Environnement fiscal avantageux",
+      "reason_high_safety": "Indice de sécurité élevé",
+      "reason_low_cost": "Coût de la vie très abordable",
+      "reason_easy_visa": "Accès visa facile",
+      "reason_climate_match": "Correspond à votre préférence climatique",
+      "reason_business_friendly": "Régime fiscal favorable aux affaires",
+      "reason_expat_friendly": "Politiques de visa favorables aux expatriés",
+      "reason_family_safe": "Environnement sûr pour les familles",
+      "reason_strong_economy": "Économie forte et stable",
+      "reason_affordable_explore": "Abordable pour l'exploration"
+    },
+    "tradeoff_reasons": {
+      "tradeoff_high_tax": "Charge fiscale plus élevée",
+      "tradeoff_low_safety": "Indice de sécurité plus faible",
+      "tradeoff_high_cost": "Coût de la vie plus élevé",
+      "tradeoff_hard_visa": "Visa difficile à obtenir",
+      "tradeoff_climate_mismatch": "Le climat peut ne pas correspondre",
+      "tradeoff_business_visa": "Visa d'affaires complexe"
+    }
+  },
+  "explain": {
+    "budget_strong": "Votre budget de {{budget}} offre un fort pouvoir d'achat en {{country}}",
+    "budget_tight": "Votre budget de {{budget}} pourrait être serré en {{country}} en raison du coût de vie élevé",
+    "tax_low": "Environnement fiscal avantageux, idéal pour optimiser vos finances",
+    "tax_high": "{{country}} impose une charge fiscale importante qui pourrait réduire votre revenu net",
+    "safety_high": "Excellent indice de sécurité ({{score}}/100) — idéal pour la tranquillité d'esprit",
+    "safety_low": "Indice de sécurité de {{score}}/100 — une vigilance accrue peut être nécessaire",
+    "visa_easy": "Processus de visa simple avec des options de résidence accessibles",
+    "visa_hard": "Exigences de visa strictes — attendez-vous à un processus long et complexe",
+    "climate_match": "Correspond à votre préférence pour les climats {{climate}} toute l'année",
+    "climate_mismatch": "Le climat diffère de votre préférence {{climate}} — une adaptation sera nécessaire",
+    "goal_business_tax": "Régime fiscal avantageux créant une base favorable pour les affaires",
+    "goal_expat_friendly": "Accueillant pour les expatriés avec un visa accessible et une bonne sécurité",
+    "goal_family_safe": "Environnement sûr et stable, adapté aux familles avec enfants",
+    "goal_investment_gdp": "Économie solide ({{gdp}} Mds $ de PIB) offrant un paysage d'investissement stable",
+    "goal_explore_cheap": "Très abordable — votre budget s'étend loin pour une exploration prolongée",
+    "tradeoff_infrastructure": "Les infrastructures peuvent être en deçà des standards occidentaux dans certaines zones",
+    "tradeoff_local_purchasing": "Le pouvoir d'achat local plus faible pourrait limiter le potentiel du marché intérieur",
+    "summary_template": "{{country}} correspond fortement à vos objectifs de {{goal}}. Avec un budget de {{budget}}, {{strength}}. Cela en fait une option convaincante à explorer.",
+    "strength_tax": "l'environnement fiscal avantageux maximise votre avantage financier",
+    "strength_safety": "les normes de sécurité élevées offrent une base solide",
+    "strength_visa": "le processus de visa accessible supprime un obstacle majeur",
+    "strength_budget": "votre budget offre un excellent pouvoir d'achat local",
+    "strength_climate": "le climat correspond bien à vos préférences de vie",
+    "edge_template": "{{higher}} se classe {{points}} points au-dessus de {{lower}}, principalement grâce à un meilleur alignement {{factor}}",
+    "factor_goal": "avec vos objectifs",
+    "factor_budget": "budget-coût",
+    "factor_tax": "fiscal",
+    "factor_safety": "sécuritaire",
+    "factor_visa": "d'accès visa",
+    "factor_climate": "climatique",
+    "ranking_edge": "Pourquoi ce classement",
+    "personalized_for": "Personnalisé pour votre profil"
+  },
+  "premium": {
+    "locked_title": "Débloquer l'analyse complète",
+    "locked_subtitle": "Voir le classement complet",
+    "locked_insight": "Accéder aux analyses approfondies",
+    "cta_title": "Allez plus loin avec Atlas X",
+    "cta_description": "Débloquez le plein potentiel de votre analyse personnalisée avec des fonctionnalités premium conçues pour les décideurs exigeants.",
+    "cta_button": "Débloquer Premium",
+    "feature_full_ranking": "Classement complet des pays",
+    "feature_comparisons": "Comparaisons avancées",
+    "feature_insights": "Analyses approfondies",
+    "feature_analysis": "Analyse personnalisée",
+    "compare_title": "Comparer les pays",
+    "compare_subtitle": "Comparaison côte à côte de vos meilleurs résultats",
+    "compare_locked": "Débloquez premium pour voir la comparaison complète",
+    "badge": "Premium",
+    "active": "Premium actif"
+  },
+  "ai": {
+    "title": "Demandez à Atlas AI",
+    "subtitle": "Intelligence géopolitique et économique",
+    "placeholder": "Posez une question sur les pays, la relocalisation ou les opportunités d'affaires...",
+    "send": "Envoyer",
+    "thinking": "Analyse des données de renseignement...",
+    "limit_title": "Débloquez l'accès illimité à Atlas AI",
+    "limit_description": "Les membres premium ont un accès illimité à Atlas AI.",
+    "greeting": "Je suis Atlas AI — votre conseiller en intelligence géopolitique et économique. Je peux analyser les pays en profondeur, comparer les stratégies de relocalisation, évaluer l'optimisation fiscale et analyser la sécurité, le coût de la vie et les voies d'accès aux visas. Posez-moi vos questions.",
+    "error": "Une erreur s'est produite. Veuillez réessayer.",
+    "suggested_title": "Questions suggérées",
+    "suggested_1": "Meilleur pays pour faible fiscalité et haute sécurité",
+    "suggested_2": "Comparer les EAU vs le Portugal pour les affaires",
+    "suggested_3": "Meilleur pays pour les nomades numériques à moins de 3 000$/mois",
+    "suggested_4": "Quel pays a le meilleur parcours visa ?"
+  },
+  "compare_panel": {
+    "title": "Comparaison des pays",
+    "subtitle": "Sélectionnez jusqu'à 4 pays à comparer côte à côte",
+    "add_country": "Ajouter un pays",
+    "select_country": "Sélectionner un pays",
+    "remove": "Retirer",
+    "from_map": "Cliquez sur un pays sur la carte pour l'ajouter",
+    "best": "Meilleur",
+    "worst": "Pire",
+    "no_countries": "Ajoutez des pays pour commencer à comparer",
+    "fields": {
+      "match_score": "Score de compatibilité",
+      "safety": "Indice de sécurité",
+      "tax": "Niveau fiscal",
+      "visa": "Accès visa",
+      "cost": "Coût de la vie",
+      "gdp": "PIB",
+      "gdp_per_capita": "PIB par habitant",
+      "salary": "Salaire moy.",
+      "population": "Population",
+      "income_tax": "Impôt sur le revenu",
+      "corporate_tax": "Impôt sociétés",
+      "inflation": "Inflation",
+      "life_expectancy": "Espérance de vie",
+      "stability": "Stabilité politique"
+    }
+  }
+}
