@@ -49,12 +49,9 @@ function useDemoContext() {
   return buildAIContext(demoProfile, demoMatches, locale);
 }
 
-// Extract follow-up actions from AI response text
 function extractFollowUpActions(text: string): string[] {
   const actions: string[] = [];
   const lines = text.split("\n");
-
-  // Look for "Next Steps" section
   let inNextSteps = false;
   for (const line of lines) {
     if (line.includes("**Next Steps**")) {
@@ -64,18 +61,15 @@ function extractFollowUpActions(text: string): string[] {
     if (inNextSteps) {
       const match = line.match(/^\d+\.\s+(.+)/);
       if (match) {
-        // Strip markdown bold markers for cleaner display
         actions.push(match[1].replace(/\*\*/g, ""));
       } else if (line.trim() === "" || line.startsWith("##") || line.startsWith("**")) {
         inNextSteps = false;
       }
     }
   }
-
   return actions.slice(0, 3);
 }
 
-// Parse structured response for better rendering
 function renderStructuredText(text: string) {
   const lines = text.split("\n");
   const elements: React.ReactNode[] = [];
@@ -84,63 +78,56 @@ function renderStructuredText(text: string) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Section headers
     if (line.startsWith("## ")) {
       elements.push(
-        <h3 key={key++} className="text-[13px] font-bold text-white/85 mt-2 mb-1.5 tracking-tight">
+        <h3 key={key++} className="text-[13px] font-semibold text-white/80 mt-3 mb-1.5 tracking-tight">
           {line.slice(3)}
         </h3>
       );
       continue;
     }
 
-    // Sub-headers (bold sections)
     if (line.startsWith("**") && line.endsWith("**:")) {
       elements.push(
-        <p key={key++} className="text-[11px] font-semibold text-cyan-400/60 mt-3 mb-1 uppercase tracking-wider">
+        <p key={key++} className="text-[10px] font-semibold text-cyan-400/50 mt-3 mb-1 uppercase tracking-wider">
           {line.replace(/\*\*/g, "").replace(/:$/, "")}
         </p>
       );
       continue;
     }
 
-    // Data indicators
     if (line.match(/^[🟢🔴🟡📊☢️🛡🥇🥈🥉✅⚠️→]/u)) {
       elements.push(
-        <div key={key++} className="text-[11px] leading-relaxed text-white/55 py-0.5 pl-1 border-l-2 border-white/[0.06] ml-1 mb-0.5">
+        <div key={key++} className="text-[12px] leading-relaxed text-white/50 py-0.5 pl-3 border-l-2 border-white/[0.06] ml-1 mb-1">
           {renderInlineBold(line)}
         </div>
       );
       continue;
     }
 
-    // Numbered steps
     if (line.match(/^\d+\.\s/)) {
       elements.push(
-        <div key={key++} className="text-[11px] leading-relaxed text-white/50 py-0.5 pl-3">
+        <div key={key++} className="text-[12px] leading-relaxed text-white/50 py-0.5 pl-4">
           {renderInlineBold(line)}
         </div>
       );
       continue;
     }
 
-    // Bullet points
     if (line.startsWith("• ") || line.startsWith("- ")) {
       elements.push(
-        <div key={key++} className="text-[11px] leading-relaxed text-white/50 py-0.5 pl-3">
+        <div key={key++} className="text-[12px] leading-relaxed text-white/50 py-0.5 pl-4">
           {renderInlineBold(line)}
         </div>
       );
       continue;
     }
 
-    // Empty lines
     if (line.trim() === "") {
-      elements.push(<div key={key++} className="h-1.5" />);
+      elements.push(<div key={key++} className="h-2" />);
       continue;
     }
 
-    // Regular text
     elements.push(
       <p key={key++} className="text-[12px] leading-relaxed text-white/50">
         {renderInlineBold(line)}
@@ -155,7 +142,7 @@ function renderInlineBold(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i} className="font-semibold text-white/80">{part.slice(2, -2)}</strong>;
+      return <strong key={i} className="font-semibold text-white/75">{part.slice(2, -2)}</strong>;
     }
     return <span key={i}>{part}</span>;
   });
@@ -223,214 +210,226 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare }: AIPanelProp
   }
 
   return (
-    <div
-      className={`fixed right-0 top-0 z-40 h-full w-full max-w-md transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        isOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"
-      }`}
-    >
+    <>
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-35 ax-overlay-backdrop ax-scale-in"
+          style={{ animationDuration: "0.3s" }}
+          onClick={onClose}
+        />
+      )}
+
+      {/* Panel */}
       <div
-        className="h-full border-l border-white/[0.06] bg-gradient-to-b from-[#0a0a16]/97 to-[#0e0e1a]/97 backdrop-blur-2xl shadow-2xl shadow-black/60 flex flex-col ax-border-glow"
-        style={{ boxShadow: "-20px 0 80px rgba(34,211,238,0.05), 0 0 120px rgba(0,0,0,0.5)" }}
+        className={`fixed right-4 top-4 bottom-4 z-40 w-full max-w-[420px] rounded-2xl overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isOpen ? "translate-x-0 opacity-100" : "translate-x-[calc(100%+16px)] opacity-0 pointer-events-none"
+        }`}
       >
-        {/* Decorative top glow */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-cyan-500/[0.03] to-transparent pointer-events-none" />
+        <div className="h-full ax-glass-3 shadow-2xl shadow-black/60 flex flex-col relative">
+          {/* Decorative accent */}
+          <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-cyan-500/25 to-transparent" />
 
-        {/* Header */}
-        <div className="relative flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-500/15 text-cyan-400 shadow-lg shadow-cyan-500/10">
-              <SparkleIcon size={16} />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold ax-gradient-text">{aiT.title}</h2>
-              <p className="text-[10px] text-white/30 mt-0.5">
-                {!hasProfile ? "Demo mode — complete profile for personalized advice" : "Relocation · Tax · Business · Investment"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {!isPremium && (
-              <span className="text-[10px] text-white/30 font-mono tabular-nums bg-white/[0.04] px-2 py-1 rounded-md">{questionCount}/{FREE_LIMIT}</span>
-            )}
-            <button
-              onClick={onClose}
-              className="ax-btn flex h-7 w-7 items-center justify-center rounded-lg ax-glass-1 text-white/30 transition-colors hover:text-white/60"
-            >
-              <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Chat messages */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3 scrollbar-thin">
-          {/* Greeting + Suggested Prompts */}
-          {messages.length === 0 && !isThinking && (
-            <>
-              <div className="flex gap-2.5">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-400/60 mt-0.5">
-                  <SparkleIcon size={10} />
-                </div>
-                <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-3.5 py-2.5">
-                  <p className="text-[12px] leading-relaxed text-white/50">
-                    {aiT.greeting}
-                  </p>
-                  <p className="text-[10px] text-white/25 mt-2 italic">
-                    I can analyze countries, compare options, build relocation plans, and optimize your tax strategy.
-                  </p>
-                </div>
+          {/* Header */}
+          <div className="relative flex items-center justify-between px-6 py-4 border-b border-white/[0.05]">
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10">
+                <div className="absolute inset-px rounded-[15px] bg-[#0a0a16]/80" />
+                <span className="relative text-cyan-400/80"><SparkleIcon size={16} /></span>
               </div>
-
-              {/* Suggested prompts — engagement entry point */}
-              <div className="mt-4 space-y-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/20 px-1">
-                  {aiT.suggested_title || "Ask Me Anything"}
+              <div>
+                <h2 className="text-[14px] font-semibold ax-gradient-text tracking-tight">{aiT.title}</h2>
+                <p className="text-[10px] text-white/25 mt-0.5">
+                  {!hasProfile ? "Demo mode — set up profile for personalized advice" : "Intelligence · Strategy · Analysis"}
                 </p>
-                {suggestedPrompts.map((prompt, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSend(prompt)}
-                    className="ax-card-hover w-full text-left rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3 text-[11px] text-white/45 transition-all duration-200 hover:border-cyan-500/20 hover:bg-cyan-500/[0.04] hover:text-white/65 ax-section-in"
-                    style={{ animationDelay: `${300 + i * 100}ms` }}
-                  >
-                    <span className="text-cyan-400/50 mr-2">→</span>
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-            >
-              {msg.role === "ai" && (
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-400/60 mt-0.5">
-                  <SparkleIcon size={10} />
-                </div>
-              )}
-              <div
-                className={`max-w-[88%] rounded-xl px-3.5 py-3 text-[12px] leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-white/[0.08] text-white/75 border border-white/[0.1]"
-                    : "bg-white/[0.02] text-white/55 border border-white/[0.05]"
-                }`}
-              >
-                {msg.role === "ai" ? renderStructuredText(msg.text) : msg.text}
-
-                {/* Country mention pills — "Add to Compare" */}
-                {msg.role === "ai" && onAddToCompare && (() => {
-                  const mentioned = findMentionedCountries(msg.text).slice(0, 4);
-                  if (mentioned.length === 0) return null;
-                  return (
-                    <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex flex-wrap gap-1.5">
-                      <span className="text-[9px] text-white/20 mr-1 self-center">Add to compare:</span>
-                      {mentioned.map((c) => (
-                        <button
-                          key={c.iso_code}
-                          onClick={() => onAddToCompare!(c.iso_code)}
-                          className="inline-flex items-center gap-1 rounded-full border border-violet-500/15 bg-violet-500/[0.05] px-2 py-0.5 text-[10px] font-medium text-violet-400/70 transition-all hover:border-violet-500/30 hover:bg-violet-500/[0.1] hover:text-violet-400 hover:scale-105"
-                        >
-                          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <path d="M12 5v14M5 12h14" />
-                          </svg>
-                          {c.name[locale]}
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                {/* Engagement loop — follow-up actions */}
-                {msg.role === "ai" && i === messages.length - 1 && (() => {
-                  const actions = extractFollowUpActions(msg.text);
-                  if (actions.length === 0) return null;
-                  return (
-                    <div className="mt-3 pt-2.5 border-t border-white/[0.06] space-y-1.5">
-                      <span className="text-[9px] text-white/20 font-semibold uppercase tracking-wider">Continue exploring</span>
-                      {actions.map((action, ai) => (
-                        <button
-                          key={ai}
-                          onClick={() => handleSend(action)}
-                          className="w-full text-left rounded-lg border border-cyan-500/10 bg-cyan-500/[0.03] px-2.5 py-2 text-[10px] text-cyan-400/50 transition-all hover:border-cyan-500/20 hover:bg-cyan-500/[0.06] hover:text-cyan-400/75 ax-section-in"
-                          style={{ animationDelay: `${ai * 80}ms` }}
-                        >
-                          <span className="text-cyan-400/40 mr-1.5">→</span>
-                          {action}
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })()}
               </div>
             </div>
-          ))}
-
-          {isThinking && (
-            <div className="flex gap-2.5">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-400/60 mt-0.5">
-                <SparkleIcon size={10} />
-              </div>
-              <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] px-3.5 py-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" style={{ animationDelay: "300ms" }} />
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" style={{ animationDelay: "600ms" }} />
-                  </div>
-                  <span className="text-[11px] text-white/25">{aiT.thinking}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div ref={chatEndRef} />
-        </div>
-
-        {/* Input */}
-        <div className="border-t border-white/[0.06] px-5 py-4">
-          {isLocked ? (
-            <div className="relative">
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3" style={{ filter: "blur(3px)" }}>
-                <span className="text-[12px] text-white/20">{aiT.placeholder}</span>
-              </div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="flex items-center gap-2 text-violet-400/70">
-                  <LockIcon size={14} />
-                  <span className="text-[12px] font-medium">{aiT.limit_title}</span>
-                </div>
-                <p className="text-[10px] text-white/25 mt-0.5">{aiT.limit_description}</p>
-              </div>
-            </div>
-          ) : (
             <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={aiT.placeholder}
-                disabled={isThinking}
-                className="flex-1 rounded-xl ax-glass-1 px-4 py-3 text-[13px] text-white/80 placeholder:text-white/25 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:shadow-[0_0_0_1px_rgba(34,211,238,0.15)] disabled:opacity-50"
-              />
+              {!isPremium && (
+                <span className="text-[10px] text-white/25 font-mono tabular-nums bg-white/[0.04] px-2.5 py-1 rounded-lg">{questionCount}/{FREE_LIMIT}</span>
+              )}
               <button
-                onClick={() => handleSend()}
-                disabled={!input.trim() || isThinking}
-                className="ax-btn flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-500/15 text-cyan-400/80 transition-all duration-200 hover:from-cyan-500/35 hover:to-blue-500/25 hover:text-cyan-300 hover:shadow-lg hover:shadow-cyan-500/15 disabled:opacity-30 disabled:hover:shadow-none"
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.04] text-white/30 transition-all hover:text-white/60 hover:bg-white/[0.08]"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 2 11 13" />
-                  <path d="M22 2 15 22 11 13 2 9l20-7Z" />
+                <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                  <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </button>
             </div>
-          )}
+          </div>
+
+          {/* Chat messages */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 scrollbar-thin">
+            {/* Empty state — greeting + prompts */}
+            {messages.length === 0 && !isThinking && (
+              <>
+                <div className="flex gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400/50 mt-0.5">
+                    <SparkleIcon size={12} />
+                  </div>
+                  <div className="rounded-2xl bg-white/[0.03] border border-white/[0.05] px-4 py-3.5">
+                    <p className="text-[12px] leading-relaxed text-white/50">
+                      {aiT.greeting}
+                    </p>
+                    <p className="text-[11px] text-white/20 mt-2.5 leading-relaxed">
+                      I can analyze countries, compare options, build relocation plans, and optimize your tax strategy.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Suggested prompts */}
+                <div className="mt-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/15 px-1 mb-3">
+                    {aiT.suggested_title || "Ask Me Anything"}
+                  </p>
+                  <div className="space-y-2">
+                    {suggestedPrompts.map((prompt, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSend(prompt)}
+                        className="ax-card-hover w-full text-left rounded-xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5 text-[12px] text-white/40 transition-all duration-300 hover:border-cyan-500/15 hover:bg-cyan-500/[0.03] hover:text-white/60 ax-section-in"
+                        style={{ animationDelay: `${300 + i * 80}ms` }}
+                      >
+                        <span className="text-cyan-400/40 mr-2">→</span>
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex gap-3 ax-fade-in-up ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+                style={{ animationDelay: "50ms" }}
+              >
+                {msg.role === "ai" && (
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400/50 mt-0.5">
+                    <SparkleIcon size={12} />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[85%] rounded-2xl px-4 py-3.5 text-[12px] leading-relaxed ${
+                    msg.role === "user"
+                      ? "bg-white/[0.07] text-white/70 border border-white/[0.08]"
+                      : "bg-white/[0.02] text-white/55 border border-white/[0.04]"
+                  }`}
+                >
+                  {msg.role === "ai" ? renderStructuredText(msg.text) : msg.text}
+
+                  {/* Country pills */}
+                  {msg.role === "ai" && onAddToCompare && (() => {
+                    const mentioned = findMentionedCountries(msg.text).slice(0, 4);
+                    if (mentioned.length === 0) return null;
+                    return (
+                      <div className="mt-3 pt-3 border-t border-white/[0.05] flex flex-wrap gap-1.5">
+                        <span className="text-[9px] text-white/15 mr-1 self-center">Add to compare:</span>
+                        {mentioned.map((c) => (
+                          <button
+                            key={c.iso_code}
+                            onClick={() => onAddToCompare!(c.iso_code)}
+                            className="inline-flex items-center gap-1 rounded-full border border-violet-500/[0.12] bg-violet-500/[0.04] px-2.5 py-1 text-[10px] font-medium text-violet-400/60 transition-all hover:border-violet-500/25 hover:bg-violet-500/[0.08] hover:text-violet-400/90"
+                          >
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                              <path d="M12 5v14M5 12h14" />
+                            </svg>
+                            {c.name[locale]}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Follow-up actions */}
+                  {msg.role === "ai" && i === messages.length - 1 && (() => {
+                    const actions = extractFollowUpActions(msg.text);
+                    if (actions.length === 0) return null;
+                    return (
+                      <div className="mt-3 pt-3 border-t border-white/[0.05] space-y-1.5">
+                        <span className="text-[9px] text-white/15 font-semibold uppercase tracking-wider">Continue exploring</span>
+                        {actions.map((action, ai) => (
+                          <button
+                            key={ai}
+                            onClick={() => handleSend(action)}
+                            className="w-full text-left rounded-xl border border-cyan-500/[0.08] bg-cyan-500/[0.02] px-3 py-2.5 text-[11px] text-cyan-400/45 transition-all hover:border-cyan-500/15 hover:bg-cyan-500/[0.05] hover:text-cyan-400/70 ax-section-in"
+                            style={{ animationDelay: `${ai * 80}ms` }}
+                          >
+                            <span className="text-cyan-400/35 mr-1.5">→</span>
+                            {action}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            ))}
+
+            {isThinking && (
+              <div className="flex gap-3 ax-fade-in-up">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400/50 mt-0.5">
+                  <SparkleIcon size={12} />
+                </div>
+                <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] px-4 py-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" style={{ animationDelay: "300ms" }} />
+                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" style={{ animationDelay: "600ms" }} />
+                    </div>
+                    <span className="text-[11px] text-white/20">{aiT.thinking}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="border-t border-white/[0.05] px-5 py-4">
+            {isLocked ? (
+              <div className="relative">
+                <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5" style={{ filter: "blur(3px)" }}>
+                  <span className="text-[12px] text-white/20">{aiT.placeholder}</span>
+                </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="flex items-center gap-2 text-violet-400/70">
+                    <LockIcon size={14} />
+                    <span className="text-[12px] font-medium">{aiT.limit_title}</span>
+                  </div>
+                  <p className="text-[10px] text-white/25 mt-0.5">{aiT.limit_description}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={aiT.placeholder}
+                  disabled={isThinking}
+                  className="flex-1 rounded-2xl ax-glass-1 px-4 py-3.5 text-[13px] text-white/80 placeholder:text-white/20 outline-none transition-all duration-300 focus:border-cyan-500/25 focus:shadow-[0_0_0_1px_rgba(34,211,238,0.1)] disabled:opacity-50"
+                />
+                <button
+                  onClick={() => handleSend()}
+                  disabled={!input.trim() || isThinking}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 text-cyan-400/70 transition-all duration-300 hover:from-cyan-500/30 hover:to-blue-500/20 hover:text-cyan-300 hover:shadow-lg hover:shadow-cyan-500/10 disabled:opacity-25 disabled:hover:shadow-none"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 2 11 13" />
+                    <path d="M22 2 15 22 11 13 2 9l20-7Z" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

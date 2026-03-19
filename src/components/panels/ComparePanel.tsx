@@ -13,10 +13,6 @@ interface ComparePanelProps {
   onClearAll?: () => void;
 }
 
-// ---------------------------------------------------------------------------
-// Comparison field definitions with value extraction + ranking direction
-// ---------------------------------------------------------------------------
-
 interface CompareField {
   key: string;
   getValue: (c: Country) => string;
@@ -37,54 +33,12 @@ const COMPARE_FIELDS: CompareField[] = [
   { key: "corporate_tax", getValue: (c) => c.tax.corporate_tax, getNumeric: (c) => parseFloat(c.tax.corporate_tax) || 20, higherIsBetter: false },
 ];
 
-function PlusIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-
-function XIcon({ size = 10 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 14 14" fill="none">
-      <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
-
-function GlobeIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-      <defs>
-        <linearGradient id="globe-grad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="rgb(139,92,246)" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="rgb(6,182,212)" stopOpacity="0.6" />
-        </linearGradient>
-      </defs>
-      <circle cx="12" cy="12" r="10" stroke="url(#globe-grad)" />
-      <path d="M2 12h20" stroke="url(#globe-grad)" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="url(#globe-grad)" />
-    </svg>
-  );
-}
-
-// Visual bar for numeric comparison
 function CompareBar({ value, max, isBest, isWorst }: { value: number; max: number; isBest: boolean; isWorst: boolean }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-  const color = isBest ? "bg-emerald-400/60" : isWorst ? "bg-red-400/50" : "bg-white/20";
+  const color = isBest ? "bg-emerald-400/50" : isWorst ? "bg-red-400/40" : "bg-white/15";
 
   return (
-    <div className="w-[75%] mx-auto mt-1 h-[3px] rounded-full bg-white/[0.05]">
+    <div className="w-[70%] mx-auto mt-1.5 h-[3px] rounded-full bg-white/[0.04]">
       <div
         className={`h-full rounded-full ${color} transition-all duration-700 ease-out`}
         style={{ width: `${pct}%` }}
@@ -107,14 +61,14 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
   const canAdd = compareIsos.length < 4;
 
   function getCellColor(field: CompareField, country: Country): string {
-    if (activeCountries.length < 2) return "text-white/60";
+    if (activeCountries.length < 2) return "text-white/55";
     const vals = activeCountries.map((c) => field.getNumeric(c));
     const val = field.getNumeric(country);
     const best = field.higherIsBetter ? Math.max(...vals) : Math.min(...vals);
     const worst = field.higherIsBetter ? Math.min(...vals) : Math.max(...vals);
     if (val === best && best !== worst) return "text-emerald-400/80 font-semibold";
-    if (val === worst && best !== worst) return "text-red-400/70";
-    return "text-white/60";
+    if (val === worst && best !== worst) return "text-red-400/65";
+    return "text-white/55";
   }
 
   function getCellBg(field: CompareField, country: Country): string {
@@ -123,8 +77,8 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
     const val = field.getNumeric(country);
     const best = field.higherIsBetter ? Math.max(...vals) : Math.min(...vals);
     const worst = field.higherIsBetter ? Math.min(...vals) : Math.max(...vals);
-    if (val === best && best !== worst) return "bg-emerald-500/[0.04]";
-    if (val === worst && best !== worst) return "bg-red-500/[0.03]";
+    if (val === best && best !== worst) return "bg-emerald-500/[0.03]";
+    if (val === worst && best !== worst) return "bg-red-500/[0.02]";
     return "";
   }
 
@@ -144,148 +98,156 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
 
   return (
     <div
-      className={`fixed bottom-0 right-0 z-[45] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        isOpen ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
+      className={`fixed bottom-4 left-[88px] right-4 z-[45] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        isOpen ? "translate-y-0 opacity-100" : "translate-y-[calc(100%+16px)] opacity-0 pointer-events-none"
       }`}
     >
-      <div
-        className="w-[calc(100vw-2rem)] max-w-4xl mx-4 mb-4 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#0a0a14]/96 to-[#0e0e1a]/96 backdrop-blur-2xl shadow-2xl shadow-black/60 ax-border-glow"
-        style={{ boxShadow: "0 -10px 60px rgba(139,92,246,0.06), 0 20px 80px rgba(0,0,0,0.5)" }}
-      >
-        {/* Decorative top glow */}
-        <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent rounded-full" />
-        <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-violet-500/[0.03] to-transparent pointer-events-none rounded-t-2xl" />
+      <div className="max-w-4xl mx-auto rounded-2xl ax-glass-3 shadow-2xl shadow-black/60 overflow-hidden">
+        {/* Top accent */}
+        <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-violet-500/25 to-transparent" />
 
         {/* Header */}
-        <div className="relative flex items-center justify-between border-b border-white/[0.05] px-6 py-4">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.04]">
           <div>
-            <h2 className="text-sm font-bold ax-gradient-text">{(cmpT?.title as string) || "Country Comparison"}</h2>
-            <p className="text-[10px] text-white/30 mt-0.5">
+            <h2 className="text-[14px] font-semibold ax-gradient-text tracking-tight">{(cmpT?.title as string) || "Country Comparison"}</h2>
+            <p className="text-[10px] text-white/25 mt-0.5">
               {canAdd
-                ? (cmpT?.select_country as string) || "Click a country on the map to add"
-                : (cmpT?.subtitle as string) || "Select up to 4 countries to compare"}
+                ? "Click a country on the map to add"
+                : "Up to 4 countries"}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {canAdd && (
               <button
                 onClick={onAddSlot}
-                className="ax-btn flex items-center gap-1.5 rounded-lg border border-dashed border-white/[0.12] bg-white/[0.02] px-3 py-1.5 text-[10px] font-medium text-white/35 hover:border-white/[0.2] hover:text-white/55"
+                className="flex items-center gap-1.5 rounded-xl border border-dashed border-white/[0.1] bg-white/[0.02] px-3.5 py-2 text-[11px] font-medium text-white/30 hover:border-white/[0.18] hover:text-white/50 transition-all"
               >
-                <PlusIcon />
-                <span>{(cmpT?.add_country as string) || "Add Country"}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add
               </button>
             )}
             {hasCountries && onClearAll && (
               <button
                 onClick={onClearAll}
-                className="ax-btn flex items-center gap-1.5 rounded-lg border border-red-500/15 bg-red-500/[0.04] px-3 py-1.5 text-[10px] font-medium text-red-400/50 hover:border-red-500/30 hover:text-red-400/80 hover:bg-red-500/[0.08] transition-colors"
+                className="flex items-center gap-1.5 rounded-xl border border-red-500/[0.12] bg-red-500/[0.03] px-3.5 py-2 text-[11px] font-medium text-red-400/45 hover:border-red-500/25 hover:text-red-400/75 transition-all"
               >
-                <TrashIcon />
-                <span>Clear All</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                Clear
               </button>
             )}
             <button
               onClick={onClose}
-              className="ax-btn flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.08] text-white/30 hover:border-white/20 hover:text-white/60"
+              className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.04] text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-all"
             >
-              <XIcon />
+              <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
             </button>
           </div>
         </div>
 
         {/* Content */}
         {!hasCountries ? (
-          <div className="px-6 py-14 text-center">
-            {/* Premium empty state */}
+          /* ── Premium Empty State ── */
+          <div className="px-8 py-14 text-center">
             <div className="relative inline-flex items-center justify-center mb-5">
-              <div className="absolute inset-0 rounded-full bg-violet-500/10 blur-xl ax-breathe" />
-              <GlobeIcon />
+              <div className="absolute inset-0 w-16 h-16 rounded-full bg-violet-500/10 blur-xl ax-breathe mx-auto" />
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                <defs>
+                  <linearGradient id="globe-grad-cmp" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="rgb(139,92,246)" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="rgb(6,182,212)" stopOpacity="0.5" />
+                  </linearGradient>
+                </defs>
+                <circle cx="12" cy="12" r="10" stroke="url(#globe-grad-cmp)" />
+                <path d="M2 12h20" stroke="url(#globe-grad-cmp)" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="url(#globe-grad-cmp)" />
+              </svg>
             </div>
-            <h3 className="text-sm font-semibold text-white/60 mb-1.5">Start Comparing</h3>
-            <p className="text-[11px] text-white/25 mb-6 max-w-xs mx-auto">
-              Select countries from the map or use the panel to build your comparison
+            <h3 className="text-[14px] font-semibold text-white/55 mb-2">Compare Countries Side by Side</h3>
+            <p className="text-[11px] text-white/20 mb-8 max-w-xs mx-auto leading-relaxed">
+              Select up to 4 countries from the map to compare safety, cost, tax, visa access, and more.
             </p>
             <div className="flex justify-center gap-3">
               {[1, 2, 3, 4].map((i) => (
                 <button
                   key={i}
                   onClick={onAddSlot}
-                  className="flex h-16 w-16 items-center justify-center rounded-xl border border-dashed border-white/[0.08] bg-white/[0.01] text-white/10 ax-section-in transition-all hover:scale-110 hover:border-violet-500/20 hover:text-violet-400/40 hover:bg-violet-500/[0.03]"
-                  style={{ animationDelay: `${i * 100}ms` }}
+                  className="flex h-14 w-14 items-center justify-center rounded-2xl border border-dashed border-white/[0.06] bg-white/[0.01] text-white/10 ax-section-in transition-all hover:scale-110 hover:border-violet-500/15 hover:text-violet-400/30 hover:bg-violet-500/[0.02]"
+                  style={{ animationDelay: `${i * 80}ms` }}
                 >
-                  <div className="animate-pulse" style={{ animationDelay: `${i * 600}ms`, animationDuration: "2.5s" }}>
-                    <PlusIcon />
-                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
                 </button>
               ))}
             </div>
           </div>
         ) : (
+          /* ── Comparison Table ── */
           <div className="overflow-x-auto scrollbar-thin">
             <div className="min-w-[600px]">
               {/* Country header cards */}
               <div className="flex border-b border-white/[0.04]">
-                <div className="w-[140px] shrink-0 px-4 py-3" />
+                <div className="w-[140px] shrink-0 px-5 py-3" />
                 {activeCountries.map((c, ci) => {
                   const matchScore = matches.find((m) => m.iso_code === c.iso_code)?.score;
                   return (
                     <div
                       key={c.iso_code}
-                      className="flex-1 px-3 py-3 text-center min-w-[120px] ax-section-in"
+                      className="flex-1 px-3 py-3.5 text-center min-w-[120px] ax-section-in"
                       style={{ animationDelay: `${ci * 80}ms` }}
                     >
                       <div className="flex items-center justify-center gap-2">
-                        <span className="text-[12px] font-semibold text-white/75">{c.name[locale]}</span>
+                        <span className="text-[13px] font-semibold text-white/70">{c.name[locale]}</span>
                         <button
                           onClick={() => onRemoveCountry(c.iso_code)}
-                          className="flex h-4 w-4 items-center justify-center rounded-full bg-white/[0.06] text-white/25 transition-all hover:bg-red-500/20 hover:text-red-400/70 hover:scale-110"
+                          className="flex h-4 w-4 items-center justify-center rounded-full bg-white/[0.05] text-white/20 transition-all hover:bg-red-500/15 hover:text-red-400/60"
                         >
-                          <XIcon size={6} />
+                          <svg width="6" height="6" viewBox="0 0 14 14" fill="none">
+                            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          </svg>
                         </button>
                       </div>
-                      <div className="text-[10px] font-mono text-white/20 mt-0.5">{c.iso_code}</div>
+                      <div className="text-[10px] font-mono text-white/15 mt-0.5">{c.iso_code}</div>
                       {matchScore !== undefined && (
-                        <div className="mt-1.5">
-                          <span className="inline-block rounded-full bg-cyan-500/10 px-2 py-0.5 text-[9px] font-medium text-cyan-400/60">
+                        <div className="mt-2">
+                          <span className="inline-block rounded-full bg-cyan-500/[0.08] px-2.5 py-0.5 text-[9px] font-medium text-cyan-400/55">
                             Score: {matchScore}
                           </span>
-                          {/* Score bar */}
-                          <div className="w-16 mx-auto mt-1 h-[2px] rounded-full bg-white/[0.05]">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-cyan-500/60 to-violet-500/60 transition-all duration-700 ease-out"
-                              style={{ width: `${matchScore}%` }}
-                            />
-                          </div>
                         </div>
                       )}
                     </div>
                   );
                 })}
-                {/* Empty slots — clickable with hover effects */}
                 {Array.from({ length: 4 - activeCountries.length }).map((_, i) => (
-                  <div key={`empty-${i}`} className="flex-1 px-3 py-3 min-w-[120px]">
+                  <div key={`empty-${i}`} className="flex-1 px-3 py-3.5 min-w-[120px]">
                     <button
                       onClick={onAddSlot}
-                      className="w-full flex flex-col items-center justify-center py-3 rounded-xl border border-dashed border-white/[0.06] bg-white/[0.01] text-white/12 transition-all hover:border-violet-500/20 hover:text-violet-400/30 hover:bg-violet-500/[0.02] hover:scale-105"
+                      className="w-full flex flex-col items-center justify-center py-3 rounded-xl border border-dashed border-white/[0.05] bg-white/[0.01] text-white/10 transition-all hover:border-violet-500/15 hover:text-violet-400/25"
                     >
-                      <div className="animate-pulse" style={{ animationDuration: "2.5s", animationDelay: `${i * 400}ms` }}>
-                        <PlusIcon />
-                      </div>
-                      <span className="text-[9px] mt-1 opacity-50">{(cmpT?.add_country as string) || "Add"}</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      <span className="text-[9px] mt-1 opacity-50">Add</span>
                     </button>
                   </div>
                 ))}
               </div>
 
-              {/* Data rows — with staggered reveal + visual bars */}
+              {/* Data rows */}
               {COMPARE_FIELDS.map((field, fi) => (
                 <div
                   key={field.key}
-                  className={`flex ax-section-in ${fi < COMPARE_FIELDS.length - 1 ? "border-b border-white/[0.03]" : ""} transition-colors hover:bg-white/[0.015]`}
-                  style={{ animationDelay: `${150 + fi * 50}ms` }}
+                  className={`flex ax-section-in ${fi < COMPARE_FIELDS.length - 1 ? "border-b border-white/[0.03]" : ""} transition-colors hover:bg-white/[0.01]`}
+                  style={{ animationDelay: `${120 + fi * 40}ms` }}
                 >
-                  <div className="w-[140px] shrink-0 px-4 py-2.5 text-[11px] text-white/35 font-medium">
+                  <div className="w-[140px] shrink-0 px-5 py-3 text-[11px] text-white/30 font-medium">
                     {fieldsT[field.key] || field.key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </div>
                   {activeCountries.map((c) => {
@@ -293,7 +255,7 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
                     return (
                       <div
                         key={c.iso_code}
-                        className={`flex-1 px-3 py-2.5 text-center min-w-[120px] transition-colors ${getCellColor(field, c)} ${getCellBg(field, c)}`}
+                        className={`flex-1 px-3 py-3 text-center min-w-[120px] transition-colors ${getCellColor(field, c)} ${getCellBg(field, c)}`}
                       >
                         <span className="text-[11px]">{field.getValue(c)}</span>
                         {barProps && (
@@ -308,7 +270,7 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
                     );
                   })}
                   {Array.from({ length: 4 - activeCountries.length }).map((_, i) => (
-                    <div key={`empty-${i}`} className="flex-1 px-3 py-2.5 text-center text-[11px] text-white/10 min-w-[120px]">
+                    <div key={`empty-${i}`} className="flex-1 px-3 py-3 text-center text-[11px] text-white/8 min-w-[120px]">
                       —
                     </div>
                   ))}
@@ -318,16 +280,16 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
           </div>
         )}
 
-        {/* Color legend */}
+        {/* Legend */}
         {hasCountries && activeCountries.length >= 2 && (
-          <div className="flex items-center justify-center gap-4 border-t border-white/[0.04] px-6 py-2.5">
+          <div className="flex items-center justify-center gap-5 border-t border-white/[0.03] px-6 py-3">
             <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-400/80" />
-              <span className="text-[9px] text-white/25">{(cmpT?.best as string) || "Best"}</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
+              <span className="text-[9px] text-white/20">{(cmpT?.best as string) || "Best"}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-red-400/70" />
-              <span className="text-[9px] text-white/25">{(cmpT?.worst as string) || "Worst"}</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-red-400/60" />
+              <span className="text-[9px] text-white/20">{(cmpT?.worst as string) || "Worst"}</span>
             </div>
           </div>
         )}
