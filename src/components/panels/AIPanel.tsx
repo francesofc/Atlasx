@@ -19,6 +19,93 @@ interface ChatMessage {
   text: string;
 }
 
+// ---------------------------------------------------------------------------
+// Locale-aware greetings & intelligence branding
+// ---------------------------------------------------------------------------
+const greetings: Record<string, { title: string; subtitle: string; moduleHint: string }> = {
+  en: {
+    title: "Atlas Intelligence",
+    subtitle: "Geopolitical analysis, tax strategy, and relocation intelligence. Ask anything about countries, markets, or opportunities.",
+    moduleHint: "Analyzing through the {module} lens. Responses are tailored to this perspective.",
+  },
+  fr: {
+    title: "Intelligence Atlas",
+    subtitle: "Analyse géopolitique, stratégie fiscale et intelligence de relocalisation. Posez vos questions sur les pays, marchés ou opportunités.",
+    moduleHint: "Analyse via le prisme {module}. Les réponses sont orientées vers cette perspective.",
+  },
+  es: {
+    title: "Inteligencia Atlas",
+    subtitle: "Análisis geopolítico, estrategia fiscal e inteligencia de reubicación. Pregunte sobre países, mercados u oportunidades.",
+    moduleHint: "Analizando desde la perspectiva de {module}. Las respuestas se adaptan a esta visión.",
+  },
+  pt: {
+    title: "Inteligência Atlas",
+    subtitle: "Análise geopolítica, estratégia fiscal e inteligência de realocação. Pergunte sobre países, mercados ou oportunidades.",
+    moduleHint: "Analisando pela perspectiva de {module}. As respostas são adaptadas a esta visão.",
+  },
+};
+
+const thinkingTexts: Record<string, string> = {
+  en: "Analyzing intelligence data...",
+  fr: "Analyse des données en cours...",
+  es: "Analizando datos de inteligencia...",
+  pt: "Analisando dados de inteligência...",
+};
+
+const suggestedLabels: Record<string, string> = {
+  en: "Intelligence Queries",
+  fr: "Requêtes d'intelligence",
+  es: "Consultas de inteligencia",
+  pt: "Consultas de inteligência",
+};
+
+const moduleLensLabels: Record<string, string> = {
+  en: "{module} lens active",
+  fr: "Prisme {module} actif",
+  es: "Perspectiva {module} activa",
+  pt: "Perspectiva {module} ativa",
+};
+
+const profileHints: Record<string, string> = {
+  en: "Configure your profile for tailored intelligence",
+  fr: "Configurez votre profil pour une intelligence personnalisée",
+  es: "Configure su perfil para inteligencia personalizada",
+  pt: "Configure seu perfil para inteligência personalizada",
+};
+
+const placeholderTexts: Record<string, string> = {
+  en: "Ask about any country, tax strategy, or opportunity...",
+  fr: "Posez une question sur un pays, une stratégie fiscale...",
+  es: "Pregunte sobre cualquier país, estrategia fiscal...",
+  pt: "Pergunte sobre qualquer país, estratégia fiscal...",
+};
+
+const upgradeTexts: Record<string, { title: string; description: string; cta: string }> = {
+  en: {
+    title: "Unlock full intelligence access",
+    description: "Continue with unlimited geopolitical analysis and strategic insights.",
+    cta: "Upgrade to Premium",
+  },
+  fr: {
+    title: "Débloquez l'accès complet",
+    description: "Continuez avec des analyses géopolitiques et des insights stratégiques illimités.",
+    cta: "Passer à Premium",
+  },
+  es: {
+    title: "Desbloquea acceso completo",
+    description: "Continúa con análisis geopolíticos e insights estratégicos ilimitados.",
+    cta: "Actualizar a Premium",
+  },
+  pt: {
+    title: "Desbloqueie acesso completo",
+    description: "Continue com análises geopolíticas e insights estratégicos ilimitados.",
+    cta: "Atualizar para Premium",
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Icons
+// ---------------------------------------------------------------------------
 function SparkleIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -27,22 +114,39 @@ function SparkleIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-function LockIcon({ size = 14 }: { size?: number }) {
+function ChevronRightIcon({ size = 10 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18l6-6-6-6" />
     </svg>
   );
 }
 
+function ArrowUpRightIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17L17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Demo context — realistic defaults
+// ---------------------------------------------------------------------------
 function useDemoContext() {
   const { locale } = useI18n();
-  const demoProfile = { ...DEFAULT_PROFILE, goal: "quality_of_life" as const, goals: ["quality_of_life" as const] };
+  const demoProfile = {
+    ...DEFAULT_PROFILE,
+    goal: "investment" as const,
+    goals: ["investment" as const],
+    budgetRange: "3000_5000" as const,
+    nationality: "",
+  };
   const demoCountries = countries.slice(0, 5);
   const demoMatches = demoCountries.map((c, i) => ({
     iso_code: c.iso_code,
-    score: 90 - i * 5,
+    score: 92 - i * 4,
     insights: [],
     summary: "",
     edgeOverNext: "",
@@ -50,6 +154,9 @@ function useDemoContext() {
   return buildAIContext(demoProfile, demoMatches, locale);
 }
 
+// ---------------------------------------------------------------------------
+// Structured text rendering
+// ---------------------------------------------------------------------------
 function extractFollowUpActions(text: string): string[] {
   const actions: string[] = [];
   const lines = text.split("\n");
@@ -149,6 +256,9 @@ function renderInlineBold(text: string) {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule }: AIPanelProps) {
   const { locale, t } = useI18n();
   const { profile, matches, isPremium } = useProfile();
@@ -163,6 +273,16 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
   const FREE_LIMIT = 2;
   const isLocked = !isPremium && questionCount >= FREE_LIMIT;
   const hasProfile = !!profile;
+
+  // Locale helpers
+  const loc = locale as string;
+  const g = greetings[loc] || greetings.en;
+  const thinkingText = aiT.thinking || thinkingTexts[loc] || thinkingTexts.en;
+  const suggestedLabel = suggestedLabels[loc] || suggestedLabels.en;
+  const moduleLensLabel = (moduleLensLabels[loc] || moduleLensLabels.en).replace("{module}", (activeModule || "").replace(/_/g, " "));
+  const profileHint = profileHints[loc] || profileHints.en;
+  const placeholderText = aiT.placeholder || placeholderTexts[loc] || placeholderTexts.en;
+  const upgrade = upgradeTexts[loc] || upgradeTexts.en;
 
   const ctx = useMemo(() => {
     return hasProfile
@@ -241,9 +361,13 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
                   <span className="relative text-cyan-400/90"><SparkleIcon size={18} /></span>
                 </div>
                 <div>
-                  <h2 className="text-[15px] font-bold text-white/90 tracking-tight">{aiT.title}</h2>
+                  <h2 className="text-[15px] font-bold text-white/90 tracking-tight">{g.title}</h2>
                   <p className="text-[10px] text-white/30 mt-0.5 font-medium">
-                    {!hasProfile ? "Demo mode — set up your profile" : activeModule ? `${activeModule.replace(/_/g, " ")} lens active` : "Intelligence · Strategy · Analysis"}
+                    {activeModule
+                      ? moduleLensLabel
+                      : !hasProfile
+                        ? profileHint
+                        : aiT.subtitle || "Geopolitical & Economic Intelligence"}
                   </p>
                 </div>
               </div>
@@ -275,11 +399,11 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
                       <SparkleIcon size={16} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-[14px] font-semibold text-white/80 mb-1.5">{aiT.greeting}</h3>
+                      <h3 className="text-[14px] font-semibold text-white/80 mb-1.5">{g.title}</h3>
                       <p className="text-[12px] text-white/35 leading-relaxed">
                         {activeModule
-                          ? `Your ${activeModule.replace(/_/g, " ")} analysis module is active. I will focus my intelligence through this lens.`
-                          : "I can analyze any country, compare destinations, build relocation strategies, and provide expert geopolitical intelligence."}
+                          ? g.moduleHint.replace("{module}", activeModule.replace(/_/g, " "))
+                          : g.subtitle}
                       </p>
                     </div>
                   </div>
@@ -287,7 +411,7 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
                     <div className="mt-3 pt-3 border-t border-white/[0.05]">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/60 animate-pulse" />
-                        <span className="text-[10px] text-cyan-400/50 font-medium uppercase tracking-wider">Active Module: {activeModule.replace(/_/g, " ")}</span>
+                        <span className="text-[10px] text-cyan-400/50 font-medium uppercase tracking-wider">{moduleLensLabel}</span>
                       </div>
                     </div>
                   )}
@@ -296,18 +420,20 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
                 {/* Suggested prompts */}
                 <div className="mt-6">
                   <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 px-1 mb-3">
-                    {aiT.suggested_title || "Intelligence Queries"}
+                    {suggestedLabel}
                   </p>
                   <div className="grid grid-cols-1 gap-2">
                     {suggestedPrompts.map((prompt, i) => (
                       <button
                         key={i}
                         onClick={() => handleSend(prompt)}
-                        className="w-full text-left rounded-xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5 text-[12px] text-white/40 transition-all duration-300 hover:border-cyan-500/12 hover:bg-cyan-500/[0.04] hover:text-white/65 hover:translate-x-1 ax-section-in group"
+                        className="w-full text-left rounded-xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5 text-[12px] text-white/40 transition-all duration-300 hover:border-cyan-500/12 hover:bg-cyan-500/[0.04] hover:text-white/65 hover:translate-x-1 ax-section-in group flex items-start gap-2.5"
                         style={{ animationDelay: `${200 + i * 100}ms` }}
                       >
-                        <span className="text-cyan-400/30 mr-2 group-hover:text-cyan-400/60 transition-colors">→</span>
-                        {prompt}
+                        <span className="text-cyan-400/30 group-hover:text-cyan-400/60 transition-colors mt-[1px] shrink-0">
+                          <ChevronRightIcon size={10} />
+                        </span>
+                        <span>{prompt}</span>
                       </button>
                     ))}
                   </div>
@@ -395,7 +521,7 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
                       <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" style={{ animationDelay: "300ms" }} />
                       <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" style={{ animationDelay: "600ms" }} />
                     </div>
-                    <span className="text-[11px] text-white/20">{aiT.thinking}</span>
+                    <span className="text-[11px] text-white/20">{thinkingText}</span>
                   </div>
                 </div>
               </div>
@@ -407,16 +533,16 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
           {/* Input */}
           <div className="border-t border-white/[0.06] px-5 py-4 bg-[#08081a]/50">
             {isLocked ? (
-              <div className="relative">
-                <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5" style={{ filter: "blur(3px)" }}>
-                  <span className="text-[12px] text-white/20">{aiT.placeholder}</span>
-                </div>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="flex items-center gap-2 text-violet-400/70">
-                    <LockIcon size={14} />
-                    <span className="text-[12px] font-medium">{aiT.limit_title}</span>
+              <div className="rounded-2xl border border-violet-500/[0.12] bg-gradient-to-r from-violet-500/[0.04] to-cyan-500/[0.03] px-5 py-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-white/70 mb-0.5">{upgrade.title}</p>
+                    <p className="text-[11px] text-white/30 leading-relaxed">{upgrade.description}</p>
                   </div>
-                  <p className="text-[10px] text-white/25 mt-0.5">{aiT.limit_description}</p>
+                  <button className="shrink-0 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-500/20 to-cyan-500/15 border border-violet-500/15 px-4 py-2.5 text-[11px] font-semibold text-violet-300/80 transition-all hover:from-violet-500/30 hover:to-cyan-500/20 hover:text-violet-200">
+                    <ArrowUpRightIcon size={11} />
+                    {upgrade.cta}
+                  </button>
                 </div>
               </div>
             ) : (
@@ -426,7 +552,7 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={aiT.placeholder}
+                  placeholder={placeholderText}
                   disabled={isThinking}
                   className="flex-1 rounded-2xl ax-glass-1 px-4 py-3.5 text-[13px] text-white/80 placeholder:text-white/20 outline-none transition-all duration-300 focus:border-cyan-500/25 focus:shadow-[0_0_0_1px_rgba(34,211,238,0.1)] disabled:opacity-50"
                 />
