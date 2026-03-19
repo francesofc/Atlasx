@@ -141,6 +141,11 @@ export default function Home() {
         onModuleChange={setActiveModule}
         onCountrySelect={handleSidebarCountrySelect}
         selectedIso={selectedIso}
+        onOpenAI={() => handleOpenAI()}
+        onOpenCompare={() => setIsCompareOpen(true)}
+        onOpenProfile={() => setIsOnboardingOpen(true)}
+        onOpenRecommendations={() => setIsResultsOpen(true)}
+        compareCount={compareIsos.length}
       />
 
       {/* === CENTER MAP === */}
