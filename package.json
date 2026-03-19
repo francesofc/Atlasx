@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "serve out -s -l ${PORT:-3000}",
     "lint": "eslint"
   },
   "dependencies": {
@@ -19,6 +19,7 @@
     "next": "16.1.7",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "serve": "^14.2.6",
     "shadcn": "^4.0.8",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4",
