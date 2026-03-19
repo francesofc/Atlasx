@@ -3,7 +3,7 @@
 import { MODULES, scoreAllCountries, type ModuleId, type CountryScore } from "@/lib/scoring";
 import { useI18n, LOCALE_LABELS, type Locale } from "@/contexts/I18nContext";
 import { useProfile } from "@/contexts/ProfileContext";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 const locales = Object.keys(LOCALE_LABELS) as Locale[];
 
@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 /* ── Module icons as clean SVGs ── */
-function ModuleIcon({ id, size = 18 }: { id: ModuleId; size?: number }) {
+function ModuleIcon({ id, size = 16 }: { id: ModuleId; size?: number }) {
   const s = (d: string) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d={d} />
@@ -79,13 +79,16 @@ function ModuleIcon({ id, size = 18 }: { id: ModuleId; size?: number }) {
   return <>{iconMap[id]}</>;
 }
 
+const CORE_MODULES: ModuleId[] = ["overview", "investment", "tax", "safety", "visa", "cost_of_living", "quality_of_life"];
+const STRATEGIC_MODULES: ModuleId[] = ["economic_growth", "war_risk", "political_stability", "business", "strategic_opportunity"];
+
 function TierDot({ tier }: { tier: "green" | "orange" | "red" }) {
   const colors = {
-    green: "bg-emerald-400 shadow-emerald-400/40",
-    orange: "bg-amber-400 shadow-amber-400/40",
-    red: "bg-red-400 shadow-red-400/40",
+    green: "bg-emerald-400",
+    orange: "bg-amber-400",
+    red: "bg-red-400",
   };
-  return <span className={`h-[6px] w-[6px] rounded-full shadow-sm ${colors[tier]}`} />;
+  return <span className={`h-1.5 w-1.5 rounded-full ${colors[tier]}`} />;
 }
 
 export default function Sidebar({
@@ -100,248 +103,227 @@ export default function Sidebar({
   compareCount,
 }: SidebarProps) {
   const scores = useMemo(() => scoreAllCountries(activeModule), [activeModule]);
+  const top5 = scores.slice(0, 5);
   const { locale, setLocale } = useI18n();
   const { hasCompletedOnboarding } = useProfile();
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const activeModuleDef = MODULES.find((m) => m.id === activeModule);
 
-  return (
-    <>
-      {/* ── Thin Icon Rail ── */}
-      <aside className="fixed left-0 top-0 z-30 h-full w-[72px] flex flex-col items-center border-r border-white/[0.04] bg-[#060610]/90 backdrop-blur-2xl">
-        {/* Logo */}
-        <div className="flex h-[64px] w-full items-center justify-center shrink-0">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="relative flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-cyan-500/15 via-violet-500/10 to-blue-500/15 transition-all duration-300 hover:scale-105 hover:from-cyan-500/25 hover:via-violet-500/15 hover:to-blue-500/25 group"
-          >
-            <div className="absolute inset-px rounded-[13px] bg-[#080814]/90" />
-            <span className="relative text-sm font-bold ax-gradient-text-brand">A</span>
-            <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 border border-[#060610] ax-pulse-dot" />
-          </button>
-        </div>
+  const tierCounts = useMemo(() => {
+    const g = scores.filter((s) => s.tier === "green").length;
+    const o = scores.filter((s) => s.tier === "orange").length;
+    const r = scores.filter((s) => s.tier === "red").length;
+    return { g, o, r, total: scores.length };
+  }, [scores]);
 
-        {/* Separator */}
-        <div className="w-8 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-2" />
-
-        {/* Module Icons — scrollable for 12 modules */}
-        <nav className="flex-1 flex flex-col items-center gap-0.5 py-1 overflow-y-auto scrollbar-thin min-h-0">
-          {MODULES.map((mod) => {
-            const isActive = activeModule === mod.id;
+  function renderModuleGroup(label: string, modules: ModuleId[]) {
+    return (
+      <div>
+        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 px-4 mb-1.5">{label}</p>
+        <div className="space-y-px">
+          {modules.map((id) => {
+            const mod = MODULES.find((m) => m.id === id)!;
+            const isActive = activeModule === id;
             return (
               <button
-                key={mod.id}
-                onClick={() => onModuleChange(mod.id)}
-                className={`ax-rail-btn ax-tooltip shrink-0 ${isActive ? "active" : ""}`}
-                data-tip={mod.label}
+                key={id}
+                onClick={() => onModuleChange(id)}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 rounded-lg mx-0 group relative ${
+                  isActive
+                    ? "bg-white/[0.08] text-white/90"
+                    : "text-white/40 hover:bg-white/[0.04] hover:text-white/65"
+                }`}
               >
-                <ModuleIcon id={mod.id} size={17} />
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-gradient-to-b from-cyan-400 to-violet-400" />
+                )}
+                <span className={`shrink-0 transition-colors ${isActive ? "text-cyan-400/80" : "text-white/25 group-hover:text-white/45"}`}>
+                  <ModuleIcon id={id} size={15} />
+                </span>
+                <span className={`text-[12px] font-medium truncate transition-colors ${isActive ? "text-white/90" : ""}`}>
+                  {mod.label}
+                </span>
               </button>
             );
           })}
-        </nav>
+        </div>
+      </div>
+    );
+  }
 
-        {/* Separator */}
-        <div className="w-8 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent my-1 shrink-0" />
+  return (
+    <aside className="fixed left-0 top-0 z-30 h-full w-[280px] flex flex-col border-r border-white/[0.06] bg-[#08081a]/95 backdrop-blur-2xl">
+      {/* ── Logo ── */}
+      <div className="px-5 pt-5 pb-4 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 via-violet-500/15 to-blue-500/20">
+            <div className="absolute inset-px rounded-[10px] bg-[#0a0a18]/90" />
+            <span className="relative text-sm font-black ax-gradient-text-brand tracking-tight">A</span>
+          </div>
+          <div>
+            <h1 className="text-[15px] font-bold tracking-tight ax-gradient-text">ATLAS X</h1>
+            <p className="text-[9px] text-white/20 font-medium tracking-[0.15em] uppercase">Geopolitical Intelligence</p>
+          </div>
+        </div>
+      </div>
 
-        {/* Tool Icons */}
-        <nav className="flex flex-col items-center gap-1">
-          {/* AI */}
-          <button onClick={onOpenAI} className="ax-rail-btn ax-tooltip" data-tip="AI Advisor">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3v1m0 16v1m-8-9H3m18 0h-1m-2.636-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
-            </svg>
-          </button>
-          {/* Compare */}
-          <button onClick={onOpenCompare} className="ax-rail-btn ax-tooltip relative" data-tip="Compare">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1.5" />
-              <rect x="14" y="3" width="7" height="7" rx="1.5" />
-              <rect x="3" y="14" width="7" height="7" rx="1.5" />
-              <rect x="14" y="14" width="7" height="7" rx="1.5" />
-            </svg>
-            {compareCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 text-[8px] font-bold text-white shadow-lg shadow-violet-500/30 ring-2 ring-[#060610]">
-                {compareCount}
-              </span>
-            )}
-          </button>
-          {/* Profile */}
-          <button onClick={onOpenProfile} className="ax-rail-btn ax-tooltip" data-tip={hasCompletedOnboarding ? "Profile" : "Set up"}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={hasCompletedOnboarding ? "text-emerald-400/60" : ""}>
-              <circle cx="12" cy="8" r="4" />
-              <path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
-            </svg>
-          </button>
-          {/* Results */}
-          <button onClick={onOpenRecommendations} className="ax-rail-btn ax-tooltip" data-tip={hasCompletedOnboarding ? "Results" : "Match"}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={hasCompletedOnboarding ? "text-amber-400/60" : ""}>
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" />
-            </svg>
-          </button>
-        </nav>
+      {/* ── Gradient divider ── */}
+      <div className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
 
-        {/* Language toggle at bottom */}
-        <div className="flex flex-col items-center gap-0.5 pb-4">
+      {/* ── Modules ── */}
+      <div className="flex-1 overflow-y-auto py-4 space-y-5 scrollbar-thin min-h-0 px-1">
+        {renderModuleGroup("CORE ANALYSIS", CORE_MODULES)}
+        {renderModuleGroup("STRATEGIC", STRATEGIC_MODULES)}
+      </div>
+
+      {/* ── Gradient divider ── */}
+      <div className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+
+      {/* ── Top Rankings Preview ── */}
+      <div className="shrink-0 px-4 py-3">
+        <div className="flex items-center justify-between mb-2.5">
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">TOP RANKINGS</p>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <span className="h-1 w-1 rounded-full bg-emerald-400/70" />
+              <span className="text-[8px] text-white/20 tabular-nums">{tierCounts.g}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="h-1 w-1 rounded-full bg-amber-400/70" />
+              <span className="text-[8px] text-white/20 tabular-nums">{tierCounts.o}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="h-1 w-1 rounded-full bg-red-400/70" />
+              <span className="text-[8px] text-white/20 tabular-nums">{tierCounts.r}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Score distribution bar */}
+        <div className="flex h-[2px] rounded-full overflow-hidden bg-white/[0.03] mb-3">
+          {tierCounts.g > 0 && <div className="h-full bg-emerald-400/50 rounded-full" style={{ width: `${(tierCounts.g / tierCounts.total) * 100}%` }} />}
+          {tierCounts.o > 0 && <div className="h-full bg-amber-400/40 rounded-full" style={{ width: `${(tierCounts.o / tierCounts.total) * 100}%` }} />}
+          {tierCounts.r > 0 && <div className="h-full bg-red-400/40 rounded-full" style={{ width: `${(tierCounts.r / tierCounts.total) * 100}%` }} />}
+        </div>
+
+        {/* Top 5 */}
+        <div className="space-y-0.5">
+          {top5.map((cs, idx) => {
+            const rank = idx + 1;
+            const isSelected = selectedIso === cs.iso;
+            const medalClass = rank === 1 ? "ax-medal-gold" : rank === 2 ? "ax-medal-silver" : rank === 3 ? "ax-medal-bronze" : "";
+            const medalSymbol = rank === 1 ? "★" : rank === 2 ? "★" : rank === 3 ? "★" : null;
+            return (
+              <button
+                key={cs.iso}
+                onClick={() => onCountrySelect(cs.iso)}
+                className={`w-full flex flex-col rounded-lg px-2.5 py-1.5 text-left transition-all duration-150 group border-l-2 ${
+                  isSelected
+                    ? "bg-white/[0.08] border-l-cyan-400/50"
+                    : rank === 1
+                    ? "bg-amber-500/[0.04] hover:bg-amber-500/[0.07] border-l-transparent hover:border-l-amber-400/30"
+                    : "hover:bg-white/[0.04] border-l-transparent hover:border-l-white/10"
+                }`}
+              >
+                <div className="flex items-center gap-2.5 w-full">
+                  {medalSymbol ? (
+                    <span className={`w-4 text-[10px] font-bold text-right shrink-0 ${medalClass}`}>
+                      {medalSymbol}
+                    </span>
+                  ) : (
+                    <span className="w-4 text-[10px] font-bold tabular-nums text-white/15 text-right shrink-0">
+                      {rank}
+                    </span>
+                  )}
+                  <TierDot tier={cs.tier} />
+                  <span className={`text-[11px] font-medium truncate flex-1 ${isSelected ? "text-white/85" : "text-white/50 group-hover:text-white/65"}`}>
+                    {cs.name}
+                  </span>
+                  <span className={`text-[11px] font-semibold tabular-nums shrink-0 ${
+                    cs.tier === "green" ? "ax-score-text-green" : cs.tier === "orange" ? "text-amber-400/65" : "text-red-400/60"
+                  }`}>
+                    {cs.score}
+                  </span>
+                </div>
+                {/* Mini progress bar */}
+                <div className="ml-[26px] mt-1 h-[1.5px] w-[calc(100%-26px)] rounded-full bg-white/[0.04] overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      cs.tier === "green" ? "bg-emerald-400/40" : cs.tier === "orange" ? "bg-amber-400/30" : "bg-red-400/30"
+                    }`}
+                    style={{ width: `${cs.score}%` }}
+                  />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-[9px] text-white/15">{scores.length} countries analyzed</p>
+          {top5.length > 0 && (
+            <button
+              onClick={() => onCountrySelect(top5[0].iso)}
+              className="text-[9px] text-cyan-400/40 hover:text-cyan-400/70 transition-colors font-medium"
+            >
+              View All Rankings
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Gradient divider ── */}
+      <div className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+
+      {/* ── Tool Actions ── */}
+      <div className="shrink-0 px-3 py-3 space-y-1">
+        <button onClick={onOpenAI} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/35 hover:bg-cyan-500/[0.06] hover:text-cyan-400/70 transition-all group border-l-2 border-l-cyan-400/20">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400/50 group-hover:text-cyan-400/80 transition-colors">
+            <path d="M12 3v1m0 16v1m-8-9H3m18 0h-1m-2.636-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
+          </svg>
+          <span className="text-[12px] font-medium">AI Advisor</span>
+        </button>
+        <button onClick={onOpenCompare} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/35 hover:bg-violet-500/[0.06] hover:text-violet-400/70 transition-all group relative border-l-2 border-l-violet-400/20">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-violet-400/50 group-hover:text-violet-400/80 transition-colors">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span className="text-[12px] font-medium">Compare</span>
+          {compareCount > 0 && (
+            <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-violet-500/80 text-[9px] font-bold text-white">{compareCount}</span>
+          )}
+        </button>
+        <button onClick={onOpenProfile} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/35 hover:bg-white/[0.04] hover:text-white/60 transition-all">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={hasCompletedOnboarding ? "text-emerald-400/50" : ""}>
+            <circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
+          </svg>
+          <span className="text-[12px] font-medium">{hasCompletedOnboarding ? "Profile" : "Set Up Profile"}</span>
+          {hasCompletedOnboarding && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-400/60" />}
+        </button>
+        <button onClick={onOpenRecommendations} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/35 hover:bg-white/[0.04] hover:text-white/60 transition-all">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={hasCompletedOnboarding ? "text-amber-400/50" : ""}>
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" />
+          </svg>
+          <span className="text-[12px] font-medium">{hasCompletedOnboarding ? "My Results" : "Get Matched"}</span>
+        </button>
+      </div>
+
+      {/* ── Language ── */}
+      <div className="shrink-0 px-4 pb-4 pt-1">
+        <div className="flex items-center gap-1 justify-center">
           {locales.map((loc) => (
             <button
               key={loc}
               onClick={() => setLocale(loc)}
-              className={`w-8 h-6 rounded-md text-[9px] font-bold tracking-wider transition-all duration-200 ${
+              className={`px-2.5 py-1 rounded-md text-[9px] font-bold tracking-wider transition-all duration-200 ${
                 locale === loc
                   ? "text-white/80 bg-white/[0.08]"
-                  : "text-white/20 hover:text-white/50 hover:bg-white/[0.04]"
+                  : "text-white/20 hover:text-white/45 hover:bg-white/[0.03]"
               }`}
             >
               {LOCALE_LABELS[loc]}
             </button>
           ))}
         </div>
-      </aside>
-
-      {/* ── Expandable Rankings Drawer ── */}
-      <div
-        className={`fixed left-[72px] top-0 z-20 h-full w-[280px] border-r border-white/[0.04] bg-[#080814]/95 backdrop-blur-2xl flex flex-col transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ax-depth-2 ${
-          isExpanded
-            ? "translate-x-0 opacity-100"
-            : "-translate-x-full opacity-0 pointer-events-none"
-        }`}
-      >
-        {/* Drawer Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.05]">
-          <div>
-            <h2 className="text-[13px] font-semibold text-white/85 tracking-tight">
-              {activeModuleDef?.label || "Rankings"}
-            </h2>
-            <p className="text-[10px] text-white/25 mt-0.5">{scores.length} countries · ranked by score</p>
-          </div>
-          <button
-            onClick={() => setIsExpanded(false)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.04] text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-all"
-          >
-            <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-              <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Score Summary Bar */}
-        <div className="px-5 py-3 border-b border-white/[0.04]">
-          <ScoreSummary scores={scores} />
-        </div>
-
-        {/* Rankings List */}
-        <div className="flex-1 overflow-y-auto px-2 py-2 scrollbar-thin">
-          {scores.map((cs, idx) => (
-            <CountryRow
-              key={cs.iso}
-              cs={cs}
-              rank={idx + 1}
-              isSelected={selectedIso === cs.iso}
-              onClick={() => {
-                onCountrySelect(cs.iso);
-                setIsExpanded(false);
-              }}
-            />
-          ))}
-        </div>
       </div>
-
-      {/* ── Click-away overlay ── */}
-      {isExpanded && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => setIsExpanded(false)}
-        />
-      )}
-    </>
-  );
-}
-
-function CountryRow({ cs, rank, isSelected, onClick }: { cs: CountryScore; rank: number; isSelected: boolean; onClick: () => void }) {
-  const isTop3 = rank <= 3;
-  const rankBadge = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
-
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 group ${
-        isSelected
-          ? "bg-white/[0.07] ax-selected-glow"
-          : "hover:bg-white/[0.04] hover:translate-x-0.5"
-      }`}
-    >
-      <span className={`w-5 text-right shrink-0 tabular-nums mt-0.5 ${isTop3 ? "text-sm" : "text-[10px] font-mono text-white/20"}`}>
-        {rankBadge || rank}
-      </span>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <TierDot tier={cs.tier} />
-          <span className={`text-[12px] font-medium truncate transition-colors ${isSelected ? "text-white/90" : "text-white/55 group-hover:text-white/70"}`}>
-            {cs.name}
-          </span>
-          <span className={`text-[12px] font-semibold tabular-nums shrink-0 ml-auto ${
-            cs.tier === "green" ? "text-emerald-400/80" : cs.tier === "orange" ? "text-amber-400/75" : "text-red-400/70"
-          }`}>
-            {cs.score}
-          </span>
-        </div>
-        <p className="text-[10px] text-white/25 mt-0.5 leading-tight line-clamp-1 pl-4 group-hover:text-white/30 transition-colors">
-          {cs.reason}
-        </p>
-      </div>
-    </button>
-  );
-}
-
-function ScoreSummary({ scores }: { scores: CountryScore[] }) {
-  const green = scores.filter((s) => s.tier === "green").length;
-  const orange = scores.filter((s) => s.tier === "orange").length;
-  const red = scores.filter((s) => s.tier === "red").length;
-  const total = scores.length;
-
-  return (
-    <div className="space-y-2">
-      {/* Bar visualization */}
-      <div className="flex h-1.5 rounded-full overflow-hidden bg-white/[0.03]">
-        {green > 0 && (
-          <div
-            className="h-full bg-emerald-400/60 transition-all duration-700"
-            style={{ width: `${(green / total) * 100}%` }}
-          />
-        )}
-        {orange > 0 && (
-          <div
-            className="h-full bg-amber-400/50 transition-all duration-700"
-            style={{ width: `${(orange / total) * 100}%` }}
-          />
-        )}
-        {red > 0 && (
-          <div
-            className="h-full bg-red-400/50 transition-all duration-700"
-            style={{ width: `${(red / total) * 100}%` }}
-          />
-        )}
-      </div>
-      {/* Labels */}
-      <div className="flex items-center justify-between text-[10px]">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
-            <span className="text-white/30">{green}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400/70" />
-            <span className="text-white/30">{orange}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-400/70" />
-            <span className="text-white/30">{red}</span>
-          </div>
-        </div>
-        <span className="text-white/15">{total} total</span>
-      </div>
-    </div>
+    </aside>
   );
 }

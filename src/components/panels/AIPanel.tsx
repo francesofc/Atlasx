@@ -227,36 +227,39 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
           isOpen ? "translate-x-0 opacity-100" : "translate-x-[calc(100%+16px)] opacity-0 pointer-events-none"
         }`}
       >
-        <div className="h-full ax-glass-3 shadow-2xl shadow-black/60 flex flex-col relative">
-          {/* Decorative accent */}
-          <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-cyan-500/25 to-transparent" />
+        <div className="h-full bg-[#0a0a18]/95 backdrop-blur-2xl border-l border-white/[0.06] shadow-2xl shadow-black/60 flex flex-col relative">
+          {/* Decorative accents */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-cyan-500/20 via-violet-500/15 to-transparent" />
+          <div className="absolute top-0 left-0 w-px h-32 bg-gradient-to-b from-cyan-500/20 to-transparent" />
 
           {/* Header */}
-          <div className="relative flex items-center justify-between px-6 py-4 border-b border-white/[0.05]">
-            <div className="flex items-center gap-3">
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10">
-                <div className="absolute inset-px rounded-[15px] bg-[#0a0a16]/80" />
-                <span className="relative text-cyan-400/80"><SparkleIcon size={16} /></span>
+          <div className="relative px-6 py-5 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3.5">
+                <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 via-blue-500/15 to-violet-500/10 border border-cyan-500/10">
+                  <div className="absolute inset-px rounded-[15px] bg-[#0a0a18]/80" />
+                  <span className="relative text-cyan-400/90"><SparkleIcon size={18} /></span>
+                </div>
+                <div>
+                  <h2 className="text-[15px] font-bold text-white/90 tracking-tight">{aiT.title}</h2>
+                  <p className="text-[10px] text-white/30 mt-0.5 font-medium">
+                    {!hasProfile ? "Demo mode — set up your profile" : activeModule ? `${activeModule.replace(/_/g, " ")} lens active` : "Intelligence · Strategy · Analysis"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-[14px] font-semibold ax-gradient-text tracking-tight">{aiT.title}</h2>
-                <p className="text-[10px] text-white/25 mt-0.5">
-                  {!hasProfile ? "Demo mode — set up profile for personalized advice" : "Intelligence · Strategy · Analysis"}
-                </p>
+              <div className="flex items-center gap-2.5">
+                {!isPremium && (
+                  <span className="text-[10px] text-white/30 font-mono tabular-nums bg-white/[0.05] px-3 py-1.5 rounded-lg border border-white/[0.04]">{questionCount}/{FREE_LIMIT}</span>
+                )}
+                <button
+                  onClick={onClose}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] text-white/30 transition-all hover:text-white/60 hover:bg-white/[0.08] border border-white/[0.04]"
+                >
+                  <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                    <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {!isPremium && (
-                <span className="text-[10px] text-white/25 font-mono tabular-nums bg-white/[0.04] px-2.5 py-1 rounded-lg">{questionCount}/{FREE_LIMIT}</span>
-              )}
-              <button
-                onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.04] text-white/30 transition-all hover:text-white/60 hover:bg-white/[0.08]"
-              >
-                <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-                  <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
             </div>
           </div>
 
@@ -265,36 +268,45 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
             {/* Empty state — greeting + prompts */}
             {messages.length === 0 && !isThinking && (
               <>
-                <div className="flex gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400/50 mt-0.5">
-                    <SparkleIcon size={12} />
+                {/* Intelligence greeting card */}
+                <div className="rounded-2xl bg-gradient-to-br from-cyan-500/[0.06] via-transparent to-violet-500/[0.04] border border-white/[0.06] p-5">
+                  <div className="flex items-start gap-3.5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/10 text-cyan-400/70">
+                      <SparkleIcon size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[14px] font-semibold text-white/80 mb-1.5">{aiT.greeting}</h3>
+                      <p className="text-[12px] text-white/35 leading-relaxed">
+                        {activeModule
+                          ? `Your ${activeModule.replace(/_/g, " ")} analysis module is active. I will focus my intelligence through this lens.`
+                          : "I can analyze any country, compare destinations, build relocation strategies, and provide expert geopolitical intelligence."}
+                      </p>
+                    </div>
                   </div>
-                  <div className="rounded-2xl bg-white/[0.03] border border-white/[0.05] px-4 py-3.5">
-                    <p className="text-[12px] leading-relaxed text-white/50">
-                      {aiT.greeting}
-                    </p>
-                    <p className="text-[11px] text-white/20 mt-2.5 leading-relaxed">
-                      {activeModule
-                        ? `Currently focused on ${activeModule.replace(/_/g, " ")} analysis. Ask me anything about this dimension.`
-                        : "I can analyze countries, compare options, build relocation plans, and optimize your tax strategy."}
-                    </p>
-                  </div>
+                  {activeModule && (
+                    <div className="mt-3 pt-3 border-t border-white/[0.05]">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/60 animate-pulse" />
+                        <span className="text-[10px] text-cyan-400/50 font-medium uppercase tracking-wider">Active Module: {activeModule.replace(/_/g, " ")}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Suggested prompts */}
-                <div className="mt-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/15 px-1 mb-3">
-                    {aiT.suggested_title || "Ask Me Anything"}
+                <div className="mt-6">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/20 px-1 mb-3">
+                    {aiT.suggested_title || "Intelligence Queries"}
                   </p>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-2">
                     {suggestedPrompts.map((prompt, i) => (
                       <button
                         key={i}
                         onClick={() => handleSend(prompt)}
-                        className="ax-card-hover w-full text-left rounded-xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5 text-[12px] text-white/40 transition-all duration-300 hover:border-cyan-500/15 hover:bg-cyan-500/[0.03] hover:text-white/60 ax-section-in"
-                        style={{ animationDelay: `${300 + i * 80}ms` }}
+                        className="w-full text-left rounded-xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5 text-[12px] text-white/40 transition-all duration-300 hover:border-cyan-500/12 hover:bg-cyan-500/[0.04] hover:text-white/65 hover:translate-x-1 ax-section-in group"
+                        style={{ animationDelay: `${200 + i * 100}ms` }}
                       >
-                        <span className="text-cyan-400/40 mr-2">→</span>
+                        <span className="text-cyan-400/30 mr-2 group-hover:text-cyan-400/60 transition-colors">→</span>
                         {prompt}
                       </button>
                     ))}
@@ -393,7 +405,7 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule 
           </div>
 
           {/* Input */}
-          <div className="border-t border-white/[0.05] px-5 py-4">
+          <div className="border-t border-white/[0.06] px-5 py-4 bg-[#08081a]/50">
             {isLocked ? (
               <div className="relative">
                 <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] px-4 py-3.5" style={{ filter: "blur(3px)" }}>

@@ -23,7 +23,7 @@ interface InsightPanelProps {
 }
 
 /* ── Score Ring ── */
-function ScoreRing({ score, size = 88 }: { score: number; size?: number }) {
+function ScoreRing({ score, size = 100 }: { score: number; size?: number }) {
   const r = (size - 8) / 2;
   const circumference = 2 * Math.PI * r;
   const offset = circumference - (score / 100) * circumference;
@@ -86,7 +86,7 @@ function BreakdownBar({ label, score, tier, delay }: { label: string; score: num
         <span className="text-[12px] font-medium text-white/45">{label}</span>
         <span className={`text-[12px] font-bold tabular-nums ${tc.text}`}>{score}</span>
       </div>
-      <div className="h-[5px] w-full rounded-full bg-white/[0.04] overflow-hidden">
+      <div className="h-[6px] w-full rounded-full bg-white/[0.04] overflow-hidden">
         <div
           className={`h-full rounded-full bg-gradient-to-r ${barColor} ax-bar-fill`}
           style={{ width: `${score}%` }}
@@ -319,7 +319,7 @@ function IntelligenceBrief({ country, module, score }: { country: Country; modul
   return (
     <div className="space-y-4">
       {/* Module explanation */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3.5 ax-section-in" style={{ animationDelay: "150ms" }}>
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3.5 ax-section-in" style={{ animationDelay: "150ms", borderLeft: `2px solid ${tier === "green" ? "rgba(52,211,153,0.4)" : tier === "orange" ? "rgba(251,191,36,0.4)" : "rgba(248,113,113,0.4)"}` }}>
         <p className="text-[11px] leading-relaxed text-white/40">{explanation}</p>
       </div>
 
@@ -328,7 +328,7 @@ function IntelligenceBrief({ country, module, score }: { country: Country; modul
         {quickFacts.map((f, i) => (
           <div
             key={f.label}
-            className="flex items-center gap-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 ax-section-in"
+            className="flex items-center gap-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 ax-section-in transition-transform duration-200 hover:scale-[1.02]"
             style={{ animationDelay: `${180 + i * 40}ms` }}
           >
             <span className="text-xs">{f.icon}</span>
@@ -430,10 +430,12 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
         <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-thin">
           {/* Score Hero */}
           <div className="flex flex-col items-center py-4 ax-section-in">
-            <ScoreRing score={score} />
+            <div className="relative flex items-center justify-center rounded-full p-4" style={{ background: "radial-gradient(circle, rgba(139,92,246,0.06) 0%, rgba(59,130,246,0.03) 40%, transparent 70%)" }}>
+              <ScoreRing score={score} size={100} />
+            </div>
             <div className="mt-4">
-              <span className={`ax-tier-badge ${tc.bg} ${tc.border} border ${tc.text}`}>
-                <span className={`h-[6px] w-[6px] rounded-full ${tc.dot}`} />
+              <span className={`ax-tier-badge ${tc.bg} ${tc.border} border ${tc.text} px-4 py-1.5 text-[11px]`}>
+                <span className={`h-[7px] w-[7px] rounded-full ${tc.dot}`} />
                 {tier === "green" ? "Excellent" : tier === "orange" ? "Average" : "Poor"}
               </span>
             </div>
@@ -468,7 +470,9 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
                 className="flex items-start gap-3 rounded-xl border border-emerald-500/[0.08] bg-emerald-500/[0.03] px-4 py-3 ax-section-in"
                 style={{ animationDelay: `${600 + i * 60}ms` }}
               >
-                <div className="mt-1.5 h-[6px] w-[6px] shrink-0 rounded-full bg-emerald-400/50" />
+                <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(52,211,153,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 17l5-5 5 5" /><path d="M7 12l5-5 5 5" />
+                </svg>
                 <span className="text-[12px] leading-relaxed text-emerald-400/70">{text}</span>
               </div>
             ))}
@@ -483,7 +487,9 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
                 className="flex items-start gap-3 rounded-xl border border-red-500/[0.08] bg-red-500/[0.03] px-4 py-3 ax-section-in"
                 style={{ animationDelay: `${740 + i * 60}ms` }}
               >
-                <div className="mt-1.5 h-[6px] w-[6px] shrink-0 rounded-full bg-red-400/50" />
+                <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(248,113,113,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3v12" /><path d="M12 21h.01" />
+                </svg>
                 <span className="text-[12px] leading-relaxed text-red-400/65">{text}</span>
               </div>
             ))}
@@ -494,7 +500,7 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
             {onAddToCompare && (
               <button
                 onClick={() => onAddToCompare(country.iso_code)}
-                className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl ax-glass-1 px-4 py-3.5 text-[12px] font-semibold text-white/50 hover:text-violet-400/90 transition-all"
+                className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500/[0.15] to-indigo-500/[0.10] border border-violet-500/[0.15] px-4 py-3.5 text-[12px] font-semibold text-violet-300/70 hover:text-violet-300 hover:border-violet-500/30 transition-all"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <rect x="3" y="3" width="7" height="7" rx="1.5" />
@@ -508,7 +514,7 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
             {onAskAI && (
               <button
                 onClick={() => onAskAI(country.iso_code)}
-                className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500/[0.08] to-blue-500/[0.05] border border-cyan-500/[0.12] px-4 py-3.5 text-[12px] font-semibold text-cyan-400/70 hover:text-cyan-400 hover:border-cyan-500/25 transition-all"
+                className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500/[0.14] to-blue-500/[0.10] border border-cyan-500/[0.18] px-4 py-3.5 text-[12px] font-semibold text-cyan-300/80 hover:text-cyan-300 hover:border-cyan-500/30 shadow-sm shadow-cyan-500/5 transition-all"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 3v1m0 16v1m-8-9H3m18 0h-1m-2.636-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
@@ -520,9 +526,12 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
 
           {/* Description */}
           <div className="mt-6 ax-section-in" style={{ animationDelay: "920ms" }}>
-            <p className="text-[12px] leading-relaxed text-white/25 italic">
-              {country.short_description[locale]}
-            </p>
+            <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3.5">
+              <span className="block text-[9px] font-semibold uppercase tracking-[0.15em] text-white/20 mb-2">About {country.name[locale]}</span>
+              <p className="text-[11.5px] leading-relaxed text-white/35">
+                {country.short_description[locale]}
+              </p>
+            </div>
           </div>
         </div>
       </div>
