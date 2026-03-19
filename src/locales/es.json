@@ -282,7 +282,92 @@
       "corporate_tax": "Impuesto sociedades",
       "inflation": "Inflación",
       "life_expectancy": "Esperanza de vida",
-      "stability": "Estabilidad política"
+      "stability": "Estabilidad política",
+      "war_risk": "Riesgo bélico",
+      "political_stability_score": "Puntuación de estabilidad política",
+      "business_score": "Puntuación empresarial",
+      "strategic_score": "Puntuación estratégica",
+      "economic_growth_score": "Puntuación de crecimiento económico"
     }
+  },
+  "modules": {
+    "overview": {
+      "label": "Resumen",
+      "description": "Panorama del país e indicadores clave de un vistazo"
+    },
+    "investment": {
+      "label": "Inversión",
+      "description": "Clima de inversión extranjera y análisis de oportunidades de capital"
+    },
+    "tax": {
+      "label": "Fiscalidad",
+      "description": "Estructuras fiscales, incentivos y potencial de optimización"
+    },
+    "safety": {
+      "label": "Seguridad",
+      "description": "Tasas de criminalidad, seguridad personal e indicadores de protección"
+    },
+    "visa": {
+      "label": "Visa",
+      "description": "Requisitos de entrada, vías de residencia y accesibilidad del visado"
+    },
+    "cost_of_living": {
+      "label": "Costo de vida",
+      "description": "Gastos cotidianos, costos de vivienda y análisis de poder adquisitivo"
+    },
+    "quality_of_life": {
+      "label": "Calidad de vida",
+      "description": "Salud, educación, infraestructura e indicadores de bienestar"
+    },
+    "economic_growth": {
+      "label": "Crecimiento económico",
+      "description": "Tendencias del PIB, trayectoria de desarrollo y dinamismo económico"
+    },
+    "war_risk": {
+      "label": "Riesgo bélico",
+      "description": "Exposición a conflictos, tensiones regionales y postura defensiva"
+    },
+    "political_stability": {
+      "label": "Estabilidad política",
+      "description": "Solidez del gobierno, confianza institucional y resiliencia del régimen"
+    },
+    "business": {
+      "label": "Negocios",
+      "description": "Ecosistema emprendedor, regulaciones y accesibilidad del mercado"
+    },
+    "strategic_opportunity": {
+      "label": "Oportunidad estratégica",
+      "description": "Ventajas emergentes, posicionamiento geopolítico y potencial a largo plazo"
+    }
+  },
+  "insight_panel": {
+    "score_breakdown": "Desglose de puntuación",
+    "key_data": "Datos clave",
+    "opportunities": "Oportunidades",
+    "risks": "Riesgos",
+    "ask_ai": "Preguntar a IA",
+    "compare": "Comparar",
+    "tier_excellent": "Excelente",
+    "tier_average": "Promedio",
+    "tier_poor": "Deficiente",
+    "executive_summary": "Resumen ejecutivo",
+    "relocation_notes": "Notas de reubicación"
+  },
+  "ranking": {
+    "title": "Ranking global",
+    "countries_analyzed": "Países analizados",
+    "show_rankings": "Ver ranking"
+  },
+  "top_bar": {
+    "explore": "Explorar",
+    "ai_advisor": "Asesor IA",
+    "compare": "Comparar",
+    "profile": "Perfil",
+    "setup": "Configuración"
+  },
+  "score_legend": {
+    "strong": "70–100",
+    "moderate": "40–69",
+    "weak": "0–39"
   }
 }

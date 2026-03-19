@@ -282,7 +282,92 @@
       "corporate_tax": "Corporate Tax",
       "inflation": "Inflation",
       "life_expectancy": "Life Expectancy",
-      "stability": "Political Stability"
+      "stability": "Political Stability",
+      "war_risk": "War Risk",
+      "political_stability_score": "Political Stability Score",
+      "business_score": "Business Score",
+      "strategic_score": "Strategic Score",
+      "economic_growth_score": "Economic Growth Score"
     }
+  },
+  "modules": {
+    "overview": {
+      "label": "Overview",
+      "description": "Country snapshot and key indicators at a glance"
+    },
+    "investment": {
+      "label": "Investment",
+      "description": "Foreign investment climate and capital opportunity analysis"
+    },
+    "tax": {
+      "label": "Tax",
+      "description": "Tax structures, incentives, and fiscal optimization potential"
+    },
+    "safety": {
+      "label": "Safety",
+      "description": "Crime rates, personal security, and public safety metrics"
+    },
+    "visa": {
+      "label": "Visa",
+      "description": "Entry requirements, residency pathways, and visa accessibility"
+    },
+    "cost_of_living": {
+      "label": "Cost of Living",
+      "description": "Daily expenses, housing costs, and purchasing power analysis"
+    },
+    "quality_of_life": {
+      "label": "Quality of Life",
+      "description": "Healthcare, education, infrastructure, and well-being indicators"
+    },
+    "economic_growth": {
+      "label": "Economic Growth",
+      "description": "GDP trends, development trajectory, and economic momentum"
+    },
+    "war_risk": {
+      "label": "War Risk",
+      "description": "Conflict exposure, regional tensions, and defense posture"
+    },
+    "political_stability": {
+      "label": "Political Stability",
+      "description": "Governance strength, institutional trust, and regime resilience"
+    },
+    "business": {
+      "label": "Business",
+      "description": "Entrepreneurial ecosystem, regulations, and market accessibility"
+    },
+    "strategic_opportunity": {
+      "label": "Strategic Opportunity",
+      "description": "Emerging advantages, geopolitical positioning, and long-term potential"
+    }
+  },
+  "insight_panel": {
+    "score_breakdown": "Score Breakdown",
+    "key_data": "Key Data",
+    "opportunities": "Opportunities",
+    "risks": "Risks",
+    "ask_ai": "Ask AI",
+    "compare": "Compare",
+    "tier_excellent": "Excellent",
+    "tier_average": "Average",
+    "tier_poor": "Poor",
+    "executive_summary": "Executive Summary",
+    "relocation_notes": "Relocation Notes"
+  },
+  "ranking": {
+    "title": "Global Ranking",
+    "countries_analyzed": "Countries Analyzed",
+    "show_rankings": "Show Rankings"
+  },
+  "top_bar": {
+    "explore": "Explore",
+    "ai_advisor": "AI Advisor",
+    "compare": "Compare",
+    "profile": "Profile",
+    "setup": "Setup"
+  },
+  "score_legend": {
+    "strong": "70–100",
+    "moderate": "40–69",
+    "weak": "0–39"
   }
 }

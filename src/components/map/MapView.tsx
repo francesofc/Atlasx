@@ -109,10 +109,10 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
     mapInstance.on("style.load", () => {
       mapInstance.setFog({
         color: "rgb(8, 6, 18)",
-        "high-color": "rgb(35, 20, 65)",
-        "horizon-blend": 0.08,
+        "high-color": "rgb(30, 15, 60)",
+        "horizon-blend": 0.06,
         "space-color": "rgb(3, 3, 10)",
-        "star-intensity": 0.75,
+        "star-intensity": 0.85,
       });
 
       if (!mapInstance.getSource(COUNTRY_SOURCE)) {
@@ -212,6 +212,21 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
               ],
               "line-blur": 3,
               "line-width-transition": { duration: 400 },
+            },
+          },
+          beforeLayerId
+        );
+
+        // Subtle always-visible country borders for depth
+        mapInstance.addLayer(
+          {
+            id: "country-border-subtle",
+            type: "line",
+            source: COUNTRY_SOURCE,
+            "source-layer": COUNTRY_SOURCE_LAYER,
+            paint: {
+              "line-color": "rgba(255, 255, 255, 0.04)",
+              "line-width": 0.5,
             },
           },
           beforeLayerId

@@ -21,40 +21,58 @@ interface SidebarProps {
 
 /* ── Module icons as clean SVGs ── */
 function ModuleIcon({ id, size = 18 }: { id: ModuleId; size?: number }) {
+  const s = (d: string) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  );
   const iconMap: Record<ModuleId, React.ReactNode> = {
+    overview: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    ),
     investment: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-        <polyline points="16 7 22 7 22 13" />
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
       </svg>
     ),
-    tax: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="3" width="20" height="18" rx="3" />
-        <path d="M8 7v10M12 7v10M16 7v10" />
-        <path d="M2 12h20" />
-      </svg>
-    ),
-    safety: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      </svg>
-    ),
+    tax: s("M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"),
+    safety: s("M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"),
     visa: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        <rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" />
       </svg>
     ),
     cost_of_living: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        <polyline points="9 22 9 12 15 12 15 22" />
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
       </svg>
     ),
-    quality_of_life: (
+    quality_of_life: s("M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"),
+    economic_growth: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" />
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+    ),
+    war_risk: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+    ),
+    political_stability: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" />
+      </svg>
+    ),
+    business: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+      </svg>
+    ),
+    strategic_opportunity: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
       </svg>
     ),
   };
@@ -107,25 +125,25 @@ export default function Sidebar({
         {/* Separator */}
         <div className="w-8 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-2" />
 
-        {/* Module Icons */}
-        <nav className="flex flex-col items-center gap-1 py-1">
+        {/* Module Icons — scrollable for 12 modules */}
+        <nav className="flex-1 flex flex-col items-center gap-0.5 py-1 overflow-y-auto scrollbar-thin min-h-0">
           {MODULES.map((mod) => {
             const isActive = activeModule === mod.id;
             return (
               <button
                 key={mod.id}
                 onClick={() => onModuleChange(mod.id)}
-                className={`ax-rail-btn ax-tooltip ${isActive ? "active" : ""}`}
+                className={`ax-rail-btn ax-tooltip shrink-0 ${isActive ? "active" : ""}`}
                 data-tip={mod.label}
               >
-                <ModuleIcon id={mod.id} size={18} />
+                <ModuleIcon id={mod.id} size={17} />
               </button>
             );
           })}
         </nav>
 
         {/* Separator */}
-        <div className="w-8 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent my-2" />
+        <div className="w-8 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent my-1 shrink-0" />
 
         {/* Tool Icons */}
         <nav className="flex flex-col items-center gap-1">
@@ -164,9 +182,6 @@ export default function Sidebar({
           </button>
         </nav>
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
         {/* Language toggle at bottom */}
         <div className="flex flex-col items-center gap-0.5 pb-4">
           {locales.map((loc) => (
@@ -187,7 +202,7 @@ export default function Sidebar({
 
       {/* ── Expandable Rankings Drawer ── */}
       <div
-        className={`fixed left-[72px] top-0 z-20 h-full w-[280px] border-r border-white/[0.04] bg-[#080814]/95 backdrop-blur-2xl flex flex-col transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed left-[72px] top-0 z-20 h-full w-[280px] border-r border-white/[0.04] bg-[#080814]/95 backdrop-blur-2xl flex flex-col transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ax-depth-2 ${
           isExpanded
             ? "translate-x-0 opacity-100"
             : "-translate-x-full opacity-0 pointer-events-none"
@@ -199,7 +214,7 @@ export default function Sidebar({
             <h2 className="text-[13px] font-semibold text-white/85 tracking-tight">
               {activeModuleDef?.label || "Rankings"}
             </h2>
-            <p className="text-[10px] text-white/25 mt-0.5">{scores.length} countries analyzed</p>
+            <p className="text-[10px] text-white/25 mt-0.5">{scores.length} countries · ranked by score</p>
           </div>
           <button
             onClick={() => setIsExpanded(false)}
@@ -245,27 +260,37 @@ export default function Sidebar({
 }
 
 function CountryRow({ cs, rank, isSelected, onClick }: { cs: CountryScore; rank: number; isSelected: boolean; onClick: () => void }) {
+  const isTop3 = rank <= 3;
+  const rankBadge = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ${
+      className={`w-full flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 group ${
         isSelected
-          ? "bg-white/[0.07] shadow-sm shadow-white/[0.02]"
-          : "hover:bg-white/[0.04]"
+          ? "bg-white/[0.07] ax-selected-glow"
+          : "hover:bg-white/[0.04] hover:translate-x-0.5"
       }`}
     >
-      <span className="w-5 text-[10px] font-mono text-white/20 text-right shrink-0 tabular-nums">
-        {rank}
+      <span className={`w-5 text-right shrink-0 tabular-nums mt-0.5 ${isTop3 ? "text-sm" : "text-[10px] font-mono text-white/20"}`}>
+        {rankBadge || rank}
       </span>
-      <TierDot tier={cs.tier} />
-      <span className={`flex-1 text-[12px] font-medium truncate transition-colors ${isSelected ? "text-white/90" : "text-white/55"}`}>
-        {cs.name}
-      </span>
-      <span className={`text-[12px] font-semibold tabular-nums ${
-        cs.tier === "green" ? "text-emerald-400/80" : cs.tier === "orange" ? "text-amber-400/75" : "text-red-400/70"
-      }`}>
-        {cs.score}
-      </span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <TierDot tier={cs.tier} />
+          <span className={`text-[12px] font-medium truncate transition-colors ${isSelected ? "text-white/90" : "text-white/55 group-hover:text-white/70"}`}>
+            {cs.name}
+          </span>
+          <span className={`text-[12px] font-semibold tabular-nums shrink-0 ml-auto ${
+            cs.tier === "green" ? "text-emerald-400/80" : cs.tier === "orange" ? "text-amber-400/75" : "text-red-400/70"
+          }`}>
+            {cs.score}
+          </span>
+        </div>
+        <p className="text-[10px] text-white/25 mt-0.5 leading-tight line-clamp-1 pl-4 group-hover:text-white/30 transition-colors">
+          {cs.reason}
+        </p>
+      </div>
     </button>
   );
 }

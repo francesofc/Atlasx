@@ -282,7 +282,92 @@
       "corporate_tax": "Impôt sociétés",
       "inflation": "Inflation",
       "life_expectancy": "Espérance de vie",
-      "stability": "Stabilité politique"
+      "stability": "Stabilité politique",
+      "war_risk": "Risque de conflit",
+      "political_stability_score": "Score de stabilité politique",
+      "business_score": "Score entrepreneurial",
+      "strategic_score": "Score stratégique",
+      "economic_growth_score": "Score de croissance économique"
     }
+  },
+  "modules": {
+    "overview": {
+      "label": "Aperçu",
+      "description": "Synthèse du pays et indicateurs clés en un coup d'œil"
+    },
+    "investment": {
+      "label": "Investissement",
+      "description": "Climat d'investissement étranger et analyse des opportunités de capital"
+    },
+    "tax": {
+      "label": "Fiscalité",
+      "description": "Structures fiscales, incitations et potentiel d'optimisation"
+    },
+    "safety": {
+      "label": "Sécurité",
+      "description": "Taux de criminalité, sécurité des personnes et indicateurs de sûreté"
+    },
+    "visa": {
+      "label": "Visa",
+      "description": "Conditions d'entrée, parcours de résidence et accessibilité des visas"
+    },
+    "cost_of_living": {
+      "label": "Coût de la vie",
+      "description": "Dépenses quotidiennes, coût du logement et pouvoir d'achat"
+    },
+    "quality_of_life": {
+      "label": "Qualité de vie",
+      "description": "Santé, éducation, infrastructures et indicateurs de bien-être"
+    },
+    "economic_growth": {
+      "label": "Croissance économique",
+      "description": "Tendances du PIB, trajectoire de développement et dynamique économique"
+    },
+    "war_risk": {
+      "label": "Risque de conflit",
+      "description": "Exposition aux conflits, tensions régionales et posture de défense"
+    },
+    "political_stability": {
+      "label": "Stabilité politique",
+      "description": "Solidité de la gouvernance, confiance institutionnelle et résilience du régime"
+    },
+    "business": {
+      "label": "Business",
+      "description": "Écosystème entrepreneurial, réglementations et accès au marché"
+    },
+    "strategic_opportunity": {
+      "label": "Opportunité stratégique",
+      "description": "Avantages émergents, positionnement géopolitique et potentiel à long terme"
+    }
+  },
+  "insight_panel": {
+    "score_breakdown": "Détail du score",
+    "key_data": "Données clés",
+    "opportunities": "Opportunités",
+    "risks": "Risques",
+    "ask_ai": "Demander à l'IA",
+    "compare": "Comparer",
+    "tier_excellent": "Excellent",
+    "tier_average": "Moyen",
+    "tier_poor": "Faible",
+    "executive_summary": "Synthèse décisionnelle",
+    "relocation_notes": "Notes de relocalisation"
+  },
+  "ranking": {
+    "title": "Classement mondial",
+    "countries_analyzed": "Pays analysés",
+    "show_rankings": "Afficher le classement"
+  },
+  "top_bar": {
+    "explore": "Explorer",
+    "ai_advisor": "Conseiller IA",
+    "compare": "Comparer",
+    "profile": "Profil",
+    "setup": "Configuration"
+  },
+  "score_legend": {
+    "strong": "70–100",
+    "moderate": "40–69",
+    "weak": "0–39"
   }
 }

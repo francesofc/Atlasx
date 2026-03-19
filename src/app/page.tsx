@@ -171,7 +171,7 @@ export default function Home() {
 
         {/* ── Floating Top Bar ── */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 ax-fade-in-up">
-          <div className="flex items-center gap-1 rounded-2xl ax-glass-2 px-2 py-1.5 shadow-2xl shadow-black/40">
+          <div className="flex items-center gap-1 rounded-2xl ax-glass-2 px-2 py-1.5 ax-depth-2">
             {/* Nav tabs */}
             <button
               onClick={() => handleViewChange("explore")}
@@ -231,7 +231,7 @@ export default function Home() {
 
         {/* ── Module Indicator (bottom-left over map) ── */}
         <div className="absolute bottom-24 left-5 z-10 ax-fade-in-up" style={{ animationDelay: "200ms" }}>
-          <div className="flex items-center gap-3 rounded-2xl ax-glass-2 px-5 py-3 pointer-events-none shadow-xl shadow-black/30">
+          <div className="flex items-center gap-3 rounded-2xl ax-glass-2 px-5 py-3 pointer-events-none ax-depth-1">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.06]">
               <span className="text-sm">{activeModuleDef?.icon}</span>
             </div>
@@ -246,7 +246,7 @@ export default function Home() {
 
         {/* ── Score Legend (bottom-left) ── */}
         <div className="absolute bottom-8 left-5 z-10">
-          <div className="flex items-center gap-5 rounded-xl ax-glass-1 px-4 py-2 pointer-events-none">
+          <div className="flex items-center gap-5 rounded-xl ax-glass-1 px-4 py-2 pointer-events-none ax-depth-1">
             <div className="flex items-center gap-2">
               <span className="h-2 w-6 rounded-full bg-emerald-400/50" />
               <span className="text-[10px] font-medium text-white/30">70–100</span>
@@ -274,7 +274,7 @@ export default function Home() {
       />
 
       {/* === AI PANEL === */}
-      <AIPanel isOpen={isAIOpen} onClose={handleCloseAI} onAddToCompare={handleAddToCompare} />
+      <AIPanel isOpen={isAIOpen} onClose={handleCloseAI} onAddToCompare={handleAddToCompare} activeModule={activeModule} />
 
       {/* === COMPARE PANEL === */}
       <ComparePanel

@@ -12,17 +12,19 @@ export interface AIContext {
   matches: CountryMatch[];
   countries: Country[];
   locale: Locale;
+  activeModule?: string;
 }
 
 export function buildAIContext(
   profile: UserProfile,
   matches: CountryMatch[],
-  locale: Locale
+  locale: Locale,
+  activeModule?: string
 ): AIContext {
   const countries = matches
     .map((m) => getCountryByIso(m.iso_code))
     .filter((c): c is Country => c !== undefined);
-  return { profile, matches, countries, locale };
+  return { profile, matches, countries, locale, activeModule };
 }
 
 export function buildSystemPrompt(ctx: AIContext): string {
@@ -58,7 +60,7 @@ ${profile.businessSector ? `- Business sector: ${profile.businessSector}` : ""}
 TOP COUNTRY MATCHES:
 ${countryList}
 
-Rules: Always reference specific data. Be structured and concise. Tailor to the user's profile.`;
+Rules: Always reference specific data. Be structured and concise. Tailor to the user's profile.${ctx.activeModule ? `\nACTIVE ANALYSIS MODULE: ${ctx.activeModule.replace(/_/g, " ").toUpperCase()}\nThe user is currently viewing the "${ctx.activeModule}" analysis lens. Tailor your responses to emphasize ${ctx.activeModule.replace(/_/g, " ")} considerations when relevant.` : ""}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -138,6 +140,57 @@ function tpl(key: string, locale: string, vars?: Record<string, string>): string
   return text;
 }
 
+const sectionHeaders: Record<string, Record<string, string>> = {
+  keyData: { en: "Key Data", fr: "Données clés", es: "Datos clave", pt: "Dados principais" },
+  why: { en: "Why", fr: "Pourquoi", es: "Por qué", pt: "Por quê" },
+  tradeoffs: { en: "Trade-offs", fr: "Compromis", es: "Compromisos", pt: "Compensações" },
+  alternatives: { en: "Alternatives", fr: "Alternatives", es: "Alternativas", pt: "Alternativas" },
+  nextSteps: { en: "Next Steps", fr: "Prochaines étapes", es: "Próximos pasos", pt: "Próximos passos" },
+};
+
+function sH(key: string, locale: string): string {
+  return sectionHeaders[key]?.[locale] || sectionHeaders[key]?.en || key;
+}
+
+const modulePromptTemplates: Record<string, Record<string, string>> = {
+  overview_best: {
+    en: "Which country has the best overall score and why?",
+    fr: "Quel pays a le meilleur score global et pourquoi ?",
+    es: "¿Qué país tiene la mejor puntuación general y por qué?",
+    pt: "Qual país tem a melhor pontuação geral e por quê?",
+  },
+  war_risk_safest: {
+    en: "Which countries have the lowest war risk right now?",
+    fr: "Quels pays ont le plus faible risque de guerre actuellement ?",
+    es: "¿Qué países tienen el menor riesgo de guerra ahora?",
+    pt: "Quais países têm o menor risco de guerra agora?",
+  },
+  political_stability_analysis: {
+    en: "Analyze political stability trends for my top matches",
+    fr: "Analyser les tendances de stabilité politique pour mes meilleurs résultats",
+    es: "Analizar las tendencias de estabilidad política para mis mejores resultados",
+    pt: "Analisar tendências de estabilidade política para meus melhores resultados",
+  },
+  economic_growth_potential: {
+    en: "Which country has the strongest economic growth potential?",
+    fr: "Quel pays a le plus fort potentiel de croissance économique ?",
+    es: "¿Qué país tiene el mayor potencial de crecimiento económico?",
+    pt: "Qual país tem o maior potencial de crescimento econômico?",
+  },
+  business_setup: {
+    en: "Best country for starting a business with low corporate tax?",
+    fr: "Meilleur pays pour créer une entreprise avec une faible taxe sur les sociétés ?",
+    es: "¿Mejor país para iniciar un negocio con bajos impuestos corporativos?",
+    pt: "Melhor país para abrir um negócio com baixo imposto corporativo?",
+  },
+  strategic_opportunity: {
+    en: "Where are the biggest strategic opportunities right now?",
+    fr: "Où sont les plus grandes opportunités stratégiques actuellement ?",
+    es: "¿Dónde están las mayores oportunidades estratégicas ahora?",
+    pt: "Onde estão as maiores oportunidades estratégicas agora?",
+  },
+};
+
 export function getSuggestedPrompts(ctx: AIContext): string[] {
   const top = ctx.countries[0];
   const second = ctx.countries[1];
@@ -146,6 +199,21 @@ export function getSuggestedPrompts(ctx: AIContext): string[] {
 
   // Always lead with the decision prompt
   prompts.push(tpl("bestForYou", locale));
+
+  // Module-specific prompt
+  const modulePromptMap: Record<string, string> = {
+    overview: "overview_best",
+    war_risk: "war_risk_safest",
+    political_stability: "political_stability_analysis",
+    economic_growth: "economic_growth_potential",
+    business: "business_setup",
+    strategic_opportunity: "strategic_opportunity",
+  };
+  const activeModuleKey = ctx.activeModule ? modulePromptMap[ctx.activeModule] : undefined;
+  if (activeModuleKey && modulePromptTemplates[activeModuleKey]) {
+    const mTpl = modulePromptTemplates[activeModuleKey];
+    prompts.splice(1, 0, mTpl[locale] || mTpl.en);
+  }
 
   // Goal-specific prompt
   const goals = ctx.profile.goals || [ctx.profile.goal];
@@ -269,12 +337,13 @@ function structuredResponse(sections: {
   alternatives?: { name: string; reason: string }[];
   nextSteps?: string[];
   dataTable?: { label: string; value: string; indicator?: "good" | "warn" | "bad" }[];
+  locale?: string;
 }): string {
   const { title, answer, why, tradeoffs, alternatives, nextSteps, dataTable } = sections;
   let out = `## ${title}\n\n${answer}`;
 
   if (dataTable && dataTable.length > 0) {
-    out += "\n\n**Key Data**:\n";
+    out += `\n\n**${sH("keyData", sections.locale || "en")}**:\n`;
     out += dataTable.map((d) => {
       const icon = d.indicator === "good" ? "🟢" : d.indicator === "bad" ? "🔴" : d.indicator === "warn" ? "🟡" : "📊";
       return `${icon} **${d.label}**: ${d.value}`;
@@ -282,22 +351,22 @@ function structuredResponse(sections: {
   }
 
   if (why && why.length > 0) {
-    out += "\n\n**Why**:\n";
+    out += `\n\n**${sH("why", sections.locale || "en")}**:\n`;
     out += why.map((w) => `• ${w}`).join("\n");
   }
 
   if (tradeoffs && tradeoffs.length > 0) {
-    out += "\n\n**Trade-offs**:\n";
+    out += `\n\n**${sH("tradeoffs", sections.locale || "en")}**:\n`;
     out += tradeoffs.map((t) => `⚠️ ${t}`).join("\n");
   }
 
   if (alternatives && alternatives.length > 0) {
-    out += "\n\n**Alternatives**:\n";
+    out += `\n\n**${sH("alternatives", sections.locale || "en")}**:\n`;
     out += alternatives.map((a) => `→ **${a.name}**: ${a.reason}`).join("\n");
   }
 
   if (nextSteps && nextSteps.length > 0) {
-    out += "\n\n**Next Steps**:\n";
+    out += `\n\n**${sH("nextSteps", sections.locale || "en")}**:\n`;
     out += nextSteps.map((s, i) => `${i + 1}. ${s}`).join("\n");
   }
 
@@ -387,6 +456,7 @@ function generateBestForYou(ctx: AIContext): string {
   if (best.economy.inflation > 6) tradeoffs.push(`High inflation (${best.economy.inflation}%) may erode purchasing power`);
 
   return structuredResponse({
+    locale: ctx.locale,
     title: `Best Option for You: ${best.name[locale]}`,
     answer: `Based on your ${goalLabel(ctx.profile.goal)} goals, ${budgetLabel(ctx.profile.budgetRange)} budget, and priorities (Tax: ${ctx.profile.taxImportance}/5, Safety: ${ctx.profile.safetyImportance}/5, Cost: ${ctx.profile.costImportance}/5), **${best.name[locale]}** is your strongest match${m ? ` with a score of ${m.score}/100` : ""}.`,
     dataTable: [
@@ -455,6 +525,7 @@ function generateDeepComparison(a: Country, b: Country, ctx: AIContext): string 
   if (a.government.political_stability !== b.government.political_stability) tradeoffs.push(`Stability: ${a.name[locale]} is ${a.government.political_stability} vs ${b.name[locale]} ${b.government.political_stability}`);
 
   return structuredResponse({
+    locale: ctx.locale,
     title: `${a.name[locale]} vs ${b.name[locale]}`,
     answer: `${ma && mb ? `**Match Scores**: ${a.name[locale]} ${ma.score}/100 | ${b.name[locale]} ${mb.score}/100\n\n` : ""}${rows.join("\n")}\n\n**Tax**: ${a.name[locale]} — ${a.tax.level} (${a.tax.income_tax}) vs ${b.name[locale]} — ${b.tax.level} (${b.tax.income_tax})\n**Visa**: ${a.name[locale]} — ${a.visa.ease_of_access} vs ${b.name[locale]} — ${b.visa.ease_of_access}`,
     why: [
@@ -497,6 +568,7 @@ function generateCountryDeepDive(c: Country, ctx: AIContext): string {
   const alts = ranked.filter((cc) => cc.iso_code !== c.iso_code).slice(0, 2);
 
   return structuredResponse({
+    locale: ctx.locale,
     title: `${c.name[locale]} — Intelligence Briefing${m ? ` (Score: ${m.score}/100)` : ""}`,
     answer: `${c.short_description[locale]}\n\n**Government**: ${c.government.type} — ${c.government.current_leader}\n**Climate**: ${c.climate.description[locale]} (avg ${c.climate.average_temp})`,
     dataTable: [
@@ -545,6 +617,7 @@ function generateNomadResponse(ctx: AIContext): string {
   const best = ranked[0];
 
   return structuredResponse({
+    locale: ctx.locale,
     title: `Best Countries for Digital Nomads`,
     answer: `For your ${budgetLabel(ctx.profile.budgetRange)} budget, **${best.name[locale]}** tops the nomad rankings with cost index ${best.cost_of_living.index}, ${best.visa.ease_of_access} visa access, and safety score ${best.safety.safety_index}/100.`,
     dataTable: ranked.map((c, i) => ({
@@ -582,6 +655,7 @@ function generateCostResponse(ctx: AIContext): string {
   const priciest = sorted[sorted.length - 1];
 
   return structuredResponse({
+    locale: ctx.locale,
     title: "Cost of Living Analysis",
     answer: `Your budget: **${budgetLabel(ctx.profile.budgetRange)}**. Best value among your matches: **${cheapest.name[locale]}** (index ${cheapest.cost_of_living.index}).`,
     dataTable: sorted.map((c, i) => ({
@@ -614,6 +688,7 @@ function generateSafetyResponse(ctx: AIContext): string {
   const safest = sorted[0];
 
   return structuredResponse({
+    locale: ctx.locale,
     title: "Safety & Security Analysis",
     answer: `Safest option: **${safest.name[locale]}** with safety index ${safest.safety.safety_index}/100 and ${safest.government.political_stability} politics.${ctx.profile.familyStatus === "family" ? " **Family safety is prioritized in this analysis.**" : ""}`,
     dataTable: sorted.map((c) => ({
@@ -649,6 +724,7 @@ function generateTaxResponse(ctx: AIContext): string {
   const lowTax = allCountries.filter((c) => c.tax.level === "low").slice(0, 5);
 
   return structuredResponse({
+    locale: ctx.locale,
     title: "Tax & Fiscal Strategy",
     answer: `For your ${goalLabel(ctx.profile.goal)} goals, focus on **${sorted[0].name[locale]}** (${sorted[0].tax.level} tax — income: ${sorted[0].tax.income_tax}, corporate: ${sorted[0].tax.corporate_tax}).`,
     dataTable: sorted.map((c) => ({
@@ -688,6 +764,7 @@ function generateVisaResponse(ctx: AIContext): string {
   const easiest = sorted[0];
 
   return structuredResponse({
+    locale: ctx.locale,
     title: "Visa & Residency Pathways",
     answer: `Easiest pathway: **${easiest.name[locale]}** with ${easiest.visa.ease_of_access} access. Options: ${easiest.visa.residency_options}.`,
     dataTable: sorted.map((c) => ({
@@ -718,6 +795,7 @@ function generateRelocationPlan(c: Country, ctx: AIContext): string {
   const locale = ctx.locale;
 
   return structuredResponse({
+    locale: ctx.locale,
     title: `Relocation Plan: ${c.name[locale]}`,
     answer: `Here's your structured relocation roadmap to **${c.name[locale]}** based on your ${goalLabel(ctx.profile.goal)} goals and ${budgetLabel(ctx.profile.budgetRange)} budget.`,
     dataTable: [
@@ -754,6 +832,7 @@ function generateEconomyResponse(ctx: AIContext): string {
   const top = sorted[0];
 
   return structuredResponse({
+    locale: ctx.locale,
     title: "Economic Intelligence",
     answer: `Strongest economy among your matches: **${top.name[locale]}** with GDP per capita $${fmt(top.economy.gdp_per_capita)} and ${top.economy.inflation}% inflation.`,
     dataTable: sorted.map((c, i) => ({
@@ -784,6 +863,7 @@ function generateMilitaryResponse(ctx: AIContext): string {
   const sorted = [...ctx.countries].sort((a, b) => a.military.power_index - b.military.power_index);
 
   return structuredResponse({
+    locale: ctx.locale,
     title: "Defense & Geopolitical Analysis",
     answer: `Strongest military presence: **${sorted[0].name[locale]}** (power index: ${sorted[0].military.power_index}${sorted[0].military.nuclear_weapon ? ", nuclear-armed" : ""}).`,
     dataTable: sorted.map((c) => ({
@@ -811,6 +891,7 @@ function generateMilitaryResponse(ctx: AIContext): string {
 function generateClimateResponse(ctx: AIContext): string {
   const locale = ctx.locale;
   return structuredResponse({
+    locale: ctx.locale,
     title: "Climate Intelligence",
     answer: `${ctx.profile.climatePreference !== "any" ? `Your preference: **${ctx.profile.climatePreference}** climate.` : "You're open to any climate."} Here's how your matches compare:`,
     dataTable: ctx.countries.map((c) => {
@@ -835,6 +916,7 @@ function generateClimateResponse(ctx: AIContext): string {
 function generateGovernmentResponse(ctx: AIContext): string {
   const locale = ctx.locale;
   return structuredResponse({
+    locale: ctx.locale,
     title: "Political Intelligence",
     answer: `Political landscape of your top matches. Stability is critical for ${goalLabel(ctx.profile.goal)} — ${ctx.profile.goal === "business" ? "unstable governments create regulatory risk" : "it affects daily life quality and long-term planning"}.`,
     dataTable: ctx.countries.map((c) => ({

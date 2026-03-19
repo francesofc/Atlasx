@@ -8,6 +8,7 @@ import {
   getScoreBreakdown,
   getScoreTier,
   tierColor,
+  getModuleExplanation,
   MODULES,
   type ModuleId,
 } from "@/lib/scoring";
@@ -139,6 +140,48 @@ function generateInsights(country: Country, module: ModuleId, score: number): { 
       if (country.safety.safety_index > 65) opportunities.push("Safe and secure living environment");
       if (country.economy.gdp_per_capita > 25000) opportunities.push("Strong economy supports quality services");
       break;
+    case "overview":
+      if (score >= 70) opportunities.push("Strong performer across multiple dimensions");
+      if (country.government.political_stability === "stable") opportunities.push("Solid institutional foundation");
+      if (country.economy.gdp_per_capita > 20000) opportunities.push("Developed economic base");
+      if (score < 40) risks.push("Significant challenges across multiple areas");
+      if (country.government.political_stability === "unstable") risks.push("Governance concerns affect overall outlook");
+      break;
+    case "economic_growth":
+      if (country.economy.inflation > 8) risks.push(`High inflation at ${country.economy.inflation}% threatens stability`);
+      if (country.economy.inflation < 3) opportunities.push("Low inflation creates stable growth conditions");
+      if (country.economy.gdp_per_capita > 40000) opportunities.push("Mature, high-income economy");
+      if (country.economy.gdp_per_capita < 5000) risks.push("Low GDP per capita signals development challenges");
+      if (country.cost_of_living.average_salary > 3000) opportunities.push("Strong wage growth supports domestic demand");
+      break;
+    case "war_risk":
+      if (country.military.nuclear_weapon) risks.push("Nuclear-armed — elevated geopolitical tension");
+      if (country.government.political_stability === "unstable") risks.push("Political instability increases conflict probability");
+      if (country.safety.safety_index > 70) opportunities.push("High safety index indicates low conflict exposure");
+      if (country.government.political_stability === "stable") opportunities.push("Stable governance reduces military conflict risk");
+      if (country.safety.crime_index > 50) risks.push("Elevated internal security concerns");
+      break;
+    case "political_stability":
+      if (country.government.political_stability === "unstable") risks.push("Weak governance creates unpredictable policy environment");
+      if (country.government.political_stability === "stable") opportunities.push("Strong institutions ensure policy predictability");
+      if (country.safety.safety_index > 65) opportunities.push("Low internal tension supports governance");
+      if (country.population_data.life_expectancy > 78) opportunities.push("High life expectancy correlates with quality governance");
+      if (country.safety.crime_index > 55) risks.push("Elevated crime suggests enforcement gaps");
+      break;
+    case "business":
+      if (country.tax.level === "low") opportunities.push("Tax-friendly environment for business formation");
+      if (country.tax.level === "high") risks.push("High tax burden increases operating costs");
+      if (country.visa.ease_of_access === "easy") opportunities.push("Easy visa access facilitates talent mobility");
+      if (country.government.political_stability === "stable") opportunities.push("Stable governance protects business interests");
+      if (country.economy.gdp_per_capita > 30000) opportunities.push("Strong consumer market for B2C businesses");
+      break;
+    case "strategic_opportunity":
+      if (country.economy.gdp_per_capita < 15000 && country.government.political_stability !== "unstable") opportunities.push("Emerging market with growth runway");
+      if (country.cost_of_living.index < 40) opportunities.push("Low operating costs create competitive advantage");
+      if (country.visa.ease_of_access === "easy") opportunities.push("Accessible market entry via visa pathways");
+      if (country.government.political_stability === "unstable") risks.push("Political risk may offset opportunity gains");
+      if (country.economy.inflation > 10) risks.push("High inflation erodes strategic investment value");
+      break;
   }
 
   if (risks.length === 0) risks.push("No major risks identified for this module");
@@ -190,6 +233,52 @@ function ModuleStats({ country, module }: { country: Country; module: ModuleId }
           { label: "Cost Index", value: `${country.cost_of_living.index}` },
           { label: "GDP/Capita", value: `$${country.economy.gdp_per_capita.toLocaleString()}` },
         ];
+      case "overview":
+        return [
+          { label: "GDP/Capita", value: `$${country.economy.gdp_per_capita.toLocaleString()}` },
+          { label: "Safety", value: `${country.safety.safety_index}/100` },
+          { label: "Stability", value: country.government.political_stability },
+          { label: "Tax Level", value: country.tax.level },
+          { label: "Visa", value: country.visa.ease_of_access },
+        ];
+      case "economic_growth":
+        return [
+          { label: "GDP/Capita", value: `$${country.economy.gdp_per_capita.toLocaleString()}` },
+          { label: "Inflation", value: `${country.economy.inflation}%` },
+          { label: "Avg Salary", value: `$${country.cost_of_living.average_salary.toLocaleString()}/mo` },
+          { label: "Stability", value: country.government.political_stability },
+        ];
+      case "war_risk":
+        return [
+          { label: "Safety Index", value: `${country.safety.safety_index}/100` },
+          { label: "Nuclear", value: country.military.nuclear_weapon ? "Yes" : "No" },
+          { label: "Military Power", value: `${country.military.power_index}` },
+          { label: "Stability", value: country.government.political_stability },
+        ];
+      case "political_stability":
+        return [
+          { label: "Stability", value: country.government.political_stability },
+          { label: "Safety Index", value: `${country.safety.safety_index}/100` },
+          { label: "Crime Index", value: `${country.safety.crime_index}/100` },
+          { label: "Life Expectancy", value: `${country.population_data.life_expectancy} yr` },
+          { label: "Government", value: country.government.type },
+        ];
+      case "business":
+        return [
+          { label: "Tax Level", value: country.tax.level },
+          { label: "Corporate Tax", value: country.tax.corporate_tax },
+          { label: "Visa Access", value: country.visa.ease_of_access },
+          { label: "GDP/Capita", value: `$${country.economy.gdp_per_capita.toLocaleString()}` },
+          { label: "Stability", value: country.government.political_stability },
+        ];
+      case "strategic_opportunity":
+        return [
+          { label: "GDP/Capita", value: `$${country.economy.gdp_per_capita.toLocaleString()}` },
+          { label: "Cost Index", value: `${country.cost_of_living.index}` },
+          { label: "Visa", value: country.visa.ease_of_access },
+          { label: "Inflation", value: `${country.economy.inflation}%` },
+          { label: "Stability", value: country.government.political_stability },
+        ];
     }
   }, [country, module]);
 
@@ -201,6 +290,75 @@ function ModuleStats({ country, module }: { country: Country; module: ModuleId }
           <span className="text-[12px] font-semibold text-white/75 capitalize">{s.value}</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ── Intelligence Brief ── */
+function IntelligenceBrief({ country, module, score }: { country: Country; module: ModuleId; score: number }) {
+  const tier = getScoreTier(score);
+  const explanations = getModuleExplanation(module);
+  const explanation = explanations[tier];
+
+  const quickFacts = useMemo(() => {
+    const facts: { icon: string; label: string; value: string; color?: string }[] = [];
+
+    facts.push({ icon: "🏛", label: "Government", value: country.government.type });
+    facts.push({ icon: "👤", label: "Leader", value: country.government.current_leader });
+    facts.push({ icon: "🌍", label: "Population", value: `${(country.population_data.population / 1e6).toFixed(1)}M` });
+    facts.push({ icon: "💰", label: "Currency", value: country.economy.currency });
+    facts.push({ icon: "🌡", label: "Climate", value: country.climate.average_temp });
+    facts.push({ icon: "🗣", label: "Language", value: country.language.split(",")[0].trim() });
+
+    return facts;
+  }, [country]);
+
+  const keyIndustries = country.main_industries.slice(0, 4);
+  const topExports = country.economy.main_exports.slice(0, 4);
+
+  return (
+    <div className="space-y-4">
+      {/* Module explanation */}
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3.5 ax-section-in" style={{ animationDelay: "150ms" }}>
+        <p className="text-[11px] leading-relaxed text-white/40">{explanation}</p>
+      </div>
+
+      {/* Quick facts grid */}
+      <div className="grid grid-cols-2 gap-2">
+        {quickFacts.map((f, i) => (
+          <div
+            key={f.label}
+            className="flex items-center gap-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 ax-section-in"
+            style={{ animationDelay: `${180 + i * 40}ms` }}
+          >
+            <span className="text-xs">{f.icon}</span>
+            <div className="min-w-0">
+              <span className="block text-[9px] text-white/20 uppercase tracking-wider">{f.label}</span>
+              <span className="block text-[11px] font-medium text-white/60 truncate">{f.value}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Industries & Exports */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="ax-section-in" style={{ animationDelay: "350ms" }}>
+          <span className="block text-[9px] font-semibold uppercase tracking-wider text-white/15 mb-2">Industries</span>
+          <div className="flex flex-wrap gap-1">
+            {keyIndustries.map((ind) => (
+              <span key={ind} className="inline-block rounded-lg bg-white/[0.03] border border-white/[0.05] px-2 py-1 text-[9px] text-white/35">{ind}</span>
+            ))}
+          </div>
+        </div>
+        <div className="ax-section-in" style={{ animationDelay: "380ms" }}>
+          <span className="block text-[9px] font-semibold uppercase tracking-wider text-white/15 mb-2">Exports</span>
+          <div className="flex flex-wrap gap-1">
+            {topExports.map((exp) => (
+              <span key={exp} className="inline-block rounded-lg bg-white/[0.03] border border-white/[0.05] px-2 py-1 text-[9px] text-white/35">{exp}</span>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -241,7 +399,7 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
       />
 
       {/* Panel */}
-      <div className="fixed right-4 top-4 bottom-4 z-40 w-full max-w-[400px] rounded-2xl ax-glass-3 shadow-2xl shadow-black/60 flex flex-col overflow-hidden ax-panel-in">
+      <div className="fixed right-4 top-4 bottom-4 z-40 w-full max-w-[400px] rounded-2xl ax-glass-3 ax-depth-3 flex flex-col overflow-hidden ax-panel-in">
         {/* Top accent line */}
         <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
@@ -281,8 +439,14 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
             </div>
           </div>
 
+          {/* Intelligence Brief */}
+          <SectionHeader title="Intelligence Brief" delay={60} />
+          <div className="mb-6">
+            <IntelligenceBrief country={country} module={module} score={score} />
+          </div>
+
           {/* Score Breakdown */}
-          <SectionHeader title="Score Breakdown" delay={80} />
+          <SectionHeader title="Score Breakdown" delay={420} />
           <div className="ax-insight-card ax-glass-1 mb-6">
             {breakdown.map((b, i) => (
               <BreakdownBar key={b.label} label={b.label} score={b.score} tier={b.tier} delay={120 + i * 60} />
@@ -290,19 +454,19 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
           </div>
 
           {/* Key Data */}
-          <SectionHeader title="Key Data" delay={200} />
+          <SectionHeader title="Key Data" delay={500} />
           <div className="ax-insight-card ax-glass-1 mb-6">
             <ModuleStats country={country} module={module} />
           </div>
 
           {/* Opportunities */}
-          <SectionHeader title="Opportunities" delay={280} />
+          <SectionHeader title="Opportunities" delay={560} />
           <div className="space-y-2 mb-6">
             {insights.opportunities.map((text, i) => (
               <div
                 key={i}
                 className="flex items-start gap-3 rounded-xl border border-emerald-500/[0.08] bg-emerald-500/[0.03] px-4 py-3 ax-section-in"
-                style={{ animationDelay: `${320 + i * 60}ms` }}
+                style={{ animationDelay: `${600 + i * 60}ms` }}
               >
                 <div className="mt-1.5 h-[6px] w-[6px] shrink-0 rounded-full bg-emerald-400/50" />
                 <span className="text-[12px] leading-relaxed text-emerald-400/70">{text}</span>
@@ -311,13 +475,13 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
           </div>
 
           {/* Risks */}
-          <SectionHeader title="Risks" delay={400} />
+          <SectionHeader title="Risks" delay={700} />
           <div className="space-y-2 mb-6">
             {insights.risks.map((text, i) => (
               <div
                 key={i}
                 className="flex items-start gap-3 rounded-xl border border-red-500/[0.08] bg-red-500/[0.03] px-4 py-3 ax-section-in"
-                style={{ animationDelay: `${440 + i * 60}ms` }}
+                style={{ animationDelay: `${740 + i * 60}ms` }}
               >
                 <div className="mt-1.5 h-[6px] w-[6px] shrink-0 rounded-full bg-red-400/50" />
                 <span className="text-[12px] leading-relaxed text-red-400/65">{text}</span>
@@ -326,7 +490,7 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 ax-section-in" style={{ animationDelay: "520ms" }}>
+          <div className="flex gap-3 ax-section-in" style={{ animationDelay: "860ms" }}>
             {onAddToCompare && (
               <button
                 onClick={() => onAddToCompare(country.iso_code)}
@@ -355,7 +519,7 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
           </div>
 
           {/* Description */}
-          <div className="mt-6 ax-section-in" style={{ animationDelay: "600ms" }}>
+          <div className="mt-6 ax-section-in" style={{ animationDelay: "920ms" }}>
             <p className="text-[12px] leading-relaxed text-white/25 italic">
               {country.short_description[locale]}
             </p>

@@ -11,6 +11,7 @@ interface AIPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToCompare?: (iso: string) => void;
+  activeModule?: string;
 }
 
 interface ChatMessage {
@@ -148,7 +149,7 @@ function renderInlineBold(text: string) {
   });
 }
 
-export default function AIPanel({ isOpen, onClose, onAddToCompare }: AIPanelProps) {
+export default function AIPanel({ isOpen, onClose, onAddToCompare, activeModule }: AIPanelProps) {
   const { locale, t } = useI18n();
   const { profile, matches, isPremium } = useProfile();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -165,9 +166,9 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare }: AIPanelProp
 
   const ctx = useMemo(() => {
     return hasProfile
-      ? buildAIContext(profile!, matches, locale)
+      ? buildAIContext(profile!, matches, locale, activeModule)
       : demoCtx;
-  }, [hasProfile, profile, matches, locale, demoCtx]);
+  }, [hasProfile, profile, matches, locale, demoCtx, activeModule]);
 
   const suggestedPrompts = useMemo(() => getSuggestedPrompts(ctx), [ctx]);
 
@@ -273,7 +274,9 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare }: AIPanelProp
                       {aiT.greeting}
                     </p>
                     <p className="text-[11px] text-white/20 mt-2.5 leading-relaxed">
-                      I can analyze countries, compare options, build relocation plans, and optimize your tax strategy.
+                      {activeModule
+                        ? `Currently focused on ${activeModule.replace(/_/g, " ")} analysis. Ask me anything about this dimension.`
+                        : "I can analyze countries, compare options, build relocation plans, and optimize your tax strategy."}
                     </p>
                   </div>
                 </div>
