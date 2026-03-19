@@ -99,8 +99,8 @@
 }
 
 /* =========================================================================
-   ATLAS X — Animation System
-   All keyframes & utility classes for the immersive experience.
+   ATLAS X — Premium Animation & Design System
+   Immersive glassmorphic dark-mode experience.
    Intensities are controlled via CSS custom properties for easy tweaking.
    ========================================================================= */
 
@@ -114,6 +114,80 @@
   --ax-stagger-step: 80ms;         /* stagger delay per section */
   --ax-click-pulse-scale: 1.04;    /* click pulse max scale */
 }
+
+/* --- Gradient text utility --- */
+.ax-gradient-text {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ax-gradient-text-brand {
+  background: linear-gradient(135deg, #67e8f9 0%, #a78bfa 50%, #67e8f9 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ax-text-shimmer 4s linear infinite;
+}
+@keyframes ax-text-shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* --- Status pulse dot --- */
+.ax-pulse-dot {
+  position: relative;
+}
+.ax-pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: inherit;
+  animation: ax-status-pulse 2s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes ax-status-pulse {
+  0%, 100% { opacity: 0; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.8); }
+}
+
+/* --- Glass surface levels --- */
+.ax-glass-1 {
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(24px);
+}
+.ax-glass-2 {
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(32px);
+}
+.ax-glass-3 {
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(40px);
+}
+
+/* --- Premium gradient border --- */
+.ax-gradient-border {
+  position: relative;
+}
+.ax-gradient-border::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(103,232,249,0.3) 30%, rgba(167,139,250,0.3) 70%, transparent 100%);
+}
+
+/* --- Score ring gradient --- */
+.ax-score-gradient-high { stroke: url(#ax-grad-high); }
+.ax-score-gradient-mid { stroke: url(#ax-grad-mid); }
+.ax-score-gradient-low { stroke: url(#ax-grad-low); }
 
 /* --- Breathing ambient glow --- */
 @keyframes ax-breathe {
@@ -227,11 +301,52 @@
 
 /* --- Card hover lift --- */
 .ax-card-hover {
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 .ax-card-hover:hover {
   transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* --- Smooth counter transition --- */
+.ax-counter {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* --- Frosted panel entrance --- */
+@keyframes ax-panel-in {
+  from { opacity: 0; transform: translateX(24px); backdrop-filter: blur(0); }
+  to { opacity: 1; transform: translateX(0); backdrop-filter: blur(32px); }
+}
+.ax-panel-in {
+  animation: ax-panel-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* --- Tooltip --- */
+.ax-tooltip {
+  position: relative;
+}
+.ax-tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(15,15,25,0.95);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.ax-tooltip:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
 }
 
 /* --- Interactive button --- */

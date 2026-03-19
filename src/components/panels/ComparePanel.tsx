@@ -149,17 +149,18 @@ export default function ComparePanel({ isOpen, onClose, compareIsos, onRemoveCou
       }`}
     >
       <div
-        className="w-[calc(100vw-2rem)] max-w-4xl mx-4 mb-4 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#0a0a12]/95 to-[#0e0e18]/95 backdrop-blur-2xl shadow-2xl shadow-black/60 ax-border-glow"
-        style={{ boxShadow: "0 -10px 60px rgba(139,92,246,0.04), 0 20px 80px rgba(0,0,0,0.5)" }}
+        className="w-[calc(100vw-2rem)] max-w-4xl mx-4 mb-4 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#0a0a14]/96 to-[#0e0e1a]/96 backdrop-blur-2xl shadow-2xl shadow-black/60 ax-border-glow"
+        style={{ boxShadow: "0 -10px 60px rgba(139,92,246,0.06), 0 20px 80px rgba(0,0,0,0.5)" }}
       >
         {/* Decorative top glow */}
-        <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-violet-500/25 to-transparent rounded-full" />
+        <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent rounded-full" />
+        <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-violet-500/[0.03] to-transparent pointer-events-none rounded-t-2xl" />
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.04] px-6 py-4">
+        <div className="relative flex items-center justify-between border-b border-white/[0.05] px-6 py-4">
           <div>
-            <h2 className="text-sm font-semibold text-white/85">{(cmpT?.title as string) || "Country Comparison"}</h2>
-            <p className="text-[10px] text-white/25">
+            <h2 className="text-sm font-bold ax-gradient-text">{(cmpT?.title as string) || "Country Comparison"}</h2>
+            <p className="text-[10px] text-white/30 mt-0.5">
               {canAdd
                 ? (cmpT?.select_country as string) || "Click a country on the map to add"
                 : (cmpT?.subtitle as string) || "Select up to 4 countries to compare"}

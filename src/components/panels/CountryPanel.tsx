@@ -59,18 +59,22 @@ function AnimatedNumber({ value, prefix = "", suffix = "", duration = 900 }: { v
 // ---------------------------------------------------------------------------
 function AnimatedBar({ value, max = 100, invert = false }: { value: number; max?: number; invert?: boolean }) {
   const pct = Math.min((value / max) * 100, 100);
-  // invert: lower is better (cost) → green when low, red when high
   const ratio = invert ? 1 - pct / 100 : pct / 100;
   const color = ratio >= 0.65
-    ? "from-emerald-500/60 to-emerald-400/40"
+    ? "from-emerald-400/70 to-cyan-400/50"
     : ratio >= 0.35
-      ? "from-amber-500/50 to-yellow-400/40"
-      : "from-red-500/50 to-rose-400/40";
+      ? "from-amber-400/60 to-yellow-400/50"
+      : "from-red-400/60 to-rose-400/50";
+  const glow = ratio >= 0.65
+    ? "shadow-emerald-500/20"
+    : ratio >= 0.35
+      ? "shadow-amber-500/20"
+      : "shadow-red-500/20";
 
   return (
-    <div className="mt-1.5 h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
+    <div className="mt-2 h-2 w-full rounded-full bg-white/[0.05] overflow-hidden">
       <div
-        className={`h-full rounded-full bg-gradient-to-r ${color} ax-bar-fill`}
+        className={`h-full rounded-full bg-gradient-to-r ${color} shadow-sm ${glow} ax-bar-fill`}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -80,20 +84,39 @@ function AnimatedBar({ value, max = 100, invert = false }: { value: number; max?
 // ---------------------------------------------------------------------------
 // Circular score ring with animated SVG draw
 // ---------------------------------------------------------------------------
-function ScoreRing({ value, max = 100, size = 52, label }: { value: number; max?: number; size?: number; label?: string }) {
+function ScoreRing({ value, max = 100, size = 56, label }: { value: number; max?: number; size?: number; label?: string }) {
   const r = (size - 6) / 2;
   const circumference = 2 * Math.PI * r;
   const ratio = value / max;
   const offset = circumference - ratio * circumference;
-  const color = ratio >= 0.65 ? "stroke-emerald-400/70" : ratio >= 0.35 ? "stroke-amber-400/70" : "stroke-red-400/70";
+  const gradId = ratio >= 0.65 ? "ax-grad-high" : ratio >= 0.35 ? "ax-grad-mid" : "ax-grad-low";
+  const glowColor = ratio >= 0.65 ? "rgba(52,211,153,0.15)" : ratio >= 0.35 ? "rgba(251,191,36,0.15)" : "rgba(248,113,113,0.15)";
+  const textColor = ratio >= 0.65 ? "text-emerald-400/90" : ratio >= 0.35 ? "text-amber-400/90" : "text-red-400/90";
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      {/* Ambient glow behind ring */}
+      <div className="absolute inset-0 rounded-full blur-md" style={{ background: glowColor }} />
       <svg width={size} height={size} className="absolute -rotate-90">
+        <defs>
+          <linearGradient id="ax-grad-high" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#06b6d4" />
+          </linearGradient>
+          <linearGradient id="ax-grad-mid" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#fbbf24" />
+            <stop offset="100%" stopColor="#f59e0b" />
+          </linearGradient>
+          <linearGradient id="ax-grad-low" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#f87171" />
+            <stop offset="100%" stopColor="#ef4444" />
+          </linearGradient>
+        </defs>
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="3" />
         <circle
           cx={size/2} cy={size/2} r={r} fill="none"
-          className={`${color} ax-circle-draw`}
+          stroke={`url(#${gradId})`}
+          className="ax-circle-draw"
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -101,8 +124,8 @@ function ScoreRing({ value, max = 100, size = 52, label }: { value: number; max?
           style={{ "--ax-circumference": circumference } as React.CSSProperties}
         />
       </svg>
-      <span className="text-[11px] font-bold text-white/70">{value}</span>
-      {label && <span className="absolute -bottom-3 text-[8px] text-white/25">{label}</span>}
+      <span className={`text-xs font-bold ${textColor}`}>{value}</span>
+      {label && <span className="absolute -bottom-3.5 text-[8px] font-medium text-white/30">{label}</span>}
     </div>
   );
 }
@@ -139,12 +162,12 @@ function Badge({ label, variant }: { label: string; variant: "low" | "medium" | 
 function Section({ icon, title, children, delay = 0 }: { icon: React.ReactNode; title: string; children: React.ReactNode; delay?: number }) {
   return (
     <div
-      className="border-t border-white/[0.04] pt-5 pb-1 ax-section-in"
+      className="border-t border-white/[0.05] pt-5 pb-2 ax-section-in"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="mb-3.5 flex items-center gap-2.5">
-        <span className="flex h-6 w-6 items-center justify-center text-white/30">{icon}</span>
-        <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-white/40">{title}</h3>
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.04] text-white/35">{icon}</span>
+        <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] ax-gradient-text">{title}</h3>
       </div>
       {children}
     </div>
@@ -154,9 +177,9 @@ function Section({ icon, title, children, delay = 0 }: { icon: React.ReactNode; 
 // Data row with hover effect
 function DataRow({ label, value, children }: { label: string; value?: string | React.ReactNode; children?: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between py-2 rounded-lg px-1 -mx-1 transition-colors hover:bg-white/[0.02]">
-      <span className="text-sm text-white/35">{label}</span>
-      <span className="text-right text-sm font-medium text-white/75">{children || value}</span>
+    <div className="flex items-start justify-between py-2.5 rounded-lg px-2 -mx-2 transition-all duration-200 hover:bg-white/[0.03] group">
+      <span className="text-[13px] text-white/40 group-hover:text-white/50 transition-colors">{label}</span>
+      <span className="text-right text-[13px] font-semibold text-white/80">{children || value}</span>
     </div>
   );
 }
@@ -249,25 +272,26 @@ export default function CountryPanel({ country, isOpen, onClose, onAddToCompare,
         aria-label={t.panel.country}
         className={`
           fixed right-0 top-0 z-50 h-full w-full max-w-md
-          border-l border-white/[0.08]
-          bg-gradient-to-b from-[#0c0c18]/96 to-[#10101e]/96
+          border-l border-white/[0.06]
+          bg-gradient-to-b from-[#0a0a16]/97 to-[#0e0e1a]/97
           backdrop-blur-2xl
           shadow-2xl shadow-black/60
           transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
           ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
-        style={isOpen ? { boxShadow: "-20px 0 80px rgba(139,92,246,0.04), 0 0 120px rgba(0,0,0,0.5)" } : undefined}
+        style={isOpen ? { boxShadow: "-20px 0 80px rgba(139,92,246,0.06), 0 0 120px rgba(0,0,0,0.5)" } : undefined}
       >
         {/* Decorative top glow */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-violet-500/[0.03] to-transparent pointer-events-none" />
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-7 py-5">
+        <div className="relative flex items-center justify-between border-b border-white/[0.06] px-7 py-5">
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/25">
+            <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/20">
               {t.panel.country}
             </p>
-            <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-white/90">
+            <h2 className="mt-1 text-xl font-bold tracking-tight ax-gradient-text">
               {data ? data.name[locale] : country?.name || "—"}
             </h2>
             {matchInfo && (
@@ -347,23 +371,25 @@ export default function CountryPanel({ country, isOpen, onClose, onAddToCompare,
               </div>
 
               {/* Score rings — at-a-glance */}
-              <div className="ax-section-in flex items-center justify-around py-3 rounded-xl border border-white/[0.06] bg-white/[0.02]" style={{ animationDelay: `${S}ms` }}>
+              <div className="ax-section-in flex items-center justify-around py-5 rounded-2xl ax-glass-1" style={{ animationDelay: `${S}ms` }}>
                 <ScoreRing value={data.safety.safety_index} label="Safety" />
+                <div className="h-10 w-px bg-gradient-to-b from-transparent via-white/[0.06] to-transparent" />
                 <ScoreRing value={data.cost_of_living.index} label="Cost" />
+                <div className="h-10 w-px bg-gradient-to-b from-transparent via-white/[0.06] to-transparent" />
                 <div className="text-center">
-                  <div className="text-lg font-bold text-white/80">
+                  <div className="text-xl font-bold ax-gradient-text ax-counter">
                     <AnimatedNumber value={data.economy.gdp_per_capita} prefix="$" />
                   </div>
-                  <span className="text-[8px] text-white/25">GDP / capita</span>
+                  <span className="text-[9px] font-medium text-white/30 mt-1 block">GDP / capita</span>
                 </div>
               </div>
 
               {/* Action buttons */}
-              <div className="ax-section-in flex gap-2" style={{ animationDelay: `${S * 2}ms` }}>
+              <div className="ax-section-in flex gap-2.5" style={{ animationDelay: `${S * 2}ms` }}>
                 {onAddToCompare && (
                   <button
                     onClick={() => onAddToCompare(data.iso_code)}
-                    className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-[12px] font-medium text-white/50 hover:border-violet-500/25 hover:text-violet-400/80"
+                    className="ax-btn flex-1 flex items-center justify-center gap-2.5 rounded-xl ax-glass-1 px-4 py-3 text-[12px] font-semibold text-white/55 hover:text-violet-400/90 hover:shadow-lg hover:shadow-violet-500/10 transition-all"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="7" height="7" />
@@ -377,7 +403,7 @@ export default function CountryPanel({ country, isOpen, onClose, onAddToCompare,
                 {onAskAI && (
                   <button
                     onClick={() => onAskAI(data.iso_code)}
-                    className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-[12px] font-medium text-white/50 hover:border-cyan-500/25 hover:text-cyan-400/80"
+                    className="ax-btn flex-1 flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-cyan-500/[0.08] to-blue-500/[0.05] border border-cyan-500/15 px-4 py-3 text-[12px] font-semibold text-cyan-400/70 hover:text-cyan-400 hover:shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/25 transition-all"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 3v1m0 16v1m-8-9H3m18 0h-1m-2.636-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />

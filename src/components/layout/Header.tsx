@@ -77,19 +77,26 @@ export default function Header({ activeView, onChangeView, compareCount = 0, onE
 
   return (
     <header className="pointer-events-none fixed left-0 top-0 z-30 w-full">
-      <div className="flex items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <div className="pointer-events-auto flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.06] backdrop-blur-md shadow-lg shadow-black/20">
-            <span className="text-sm font-bold tracking-tight text-white/80">A</span>
+      <div className="flex items-center justify-between px-5 py-3.5">
+        {/* Logo — premium gradient */}
+        <div className="pointer-events-auto flex items-center gap-3">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 via-violet-500/15 to-blue-500/20 shadow-lg shadow-black/30 ax-gradient-border">
+            <div className="absolute inset-px rounded-[10px] bg-[#0a0a14]/90" />
+            <span className="relative text-sm font-bold tracking-tight ax-gradient-text-brand">A</span>
           </div>
-          <span className="text-sm font-semibold tracking-[0.08em] text-white/70">
-            {t.app.title}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-[13px] font-bold tracking-[0.06em] ax-gradient-text">
+              {t.app.title}
+            </span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-400 ax-pulse-dot" />
+              <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-emerald-400/50">Live</span>
+            </div>
+          </div>
         </div>
 
         {/* Floating glassmorphism nav */}
-        <nav className="pointer-events-auto flex items-center gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-1.5 py-1.5 backdrop-blur-2xl shadow-2xl shadow-black/30 ax-border-glow">
+        <nav className="pointer-events-auto flex items-center gap-0.5 rounded-2xl ax-glass-2 px-1.5 py-1.5 shadow-2xl shadow-black/40 ax-border-glow ax-gradient-border">
           {navItems.map((item) => {
             const isActive = activeView === item.key;
             const isRecommendations = item.key === "recommendations";
@@ -99,20 +106,24 @@ export default function Header({ activeView, onChangeView, compareCount = 0, onE
               <button
                 key={item.key}
                 onClick={() => onChangeView(item.key)}
-                className={`group flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-medium tracking-wide transition-all duration-300 ${
+                className={`group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-medium tracking-wide transition-all duration-300 ${
                   isActive
                     ? showGreen
-                      ? "bg-emerald-500/15 text-emerald-400/90 shadow-inner shadow-emerald-500/5"
-                      : "bg-white/[0.1] text-white/90 shadow-inner shadow-white/5"
+                      ? "bg-emerald-500/15 text-emerald-400 shadow-inner shadow-emerald-500/10"
+                      : "bg-white/[0.12] text-white/95 shadow-inner shadow-white/5"
                     : showGreen
-                      ? "text-emerald-400/50 hover:bg-emerald-500/[0.06] hover:text-emerald-400/70"
-                      : "text-white/35 hover:bg-white/[0.05] hover:text-white/60"
+                      ? "text-emerald-400/50 hover:bg-emerald-500/[0.08] hover:text-emerald-400/80"
+                      : "text-white/40 hover:bg-white/[0.06] hover:text-white/70"
                 }`}
               >
-                <span className={`relative transition-transform duration-300 group-hover:scale-110 ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-80"}`}>
+                {/* Active indicator dot */}
+                {isActive && (
+                  <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-gradient-to-r from-cyan-400/60 to-violet-400/60" />
+                )}
+                <span className={`relative transition-all duration-300 group-hover:scale-110 ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-90"}`}>
                   {item.icon}
                   {item.key === "compare" && compareCount > 0 && (
-                    <span className="absolute -right-1.5 -top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white">
+                    <span className="absolute -right-1.5 -top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 text-[8px] font-bold text-white shadow-lg shadow-violet-500/30">
                       {compareCount}
                     </span>
                   )}
@@ -129,14 +140,14 @@ export default function Header({ activeView, onChangeView, compareCount = 0, onE
           {onHelpMeDecide && (
             <button
               onClick={onHelpMeDecide}
-              className="flex items-center gap-2 rounded-xl border border-cyan-500/15 bg-cyan-500/[0.06] px-3.5 py-1.5 backdrop-blur-xl shadow-lg shadow-black/20 transition-all hover:border-cyan-500/25 hover:bg-cyan-500/[0.1] hover:shadow-cyan-500/10"
+              className="ax-btn flex items-center gap-2 rounded-xl ax-glass-1 px-3.5 py-2 shadow-lg shadow-black/20 transition-all hover:shadow-cyan-500/10 group"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400/70">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400/70 group-hover:text-cyan-400 transition-colors">
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 17h.01" />
               </svg>
-              <span className="text-[11px] font-medium tracking-wide text-cyan-400/60">Help me decide</span>
+              <span className="text-[11px] font-medium tracking-wide text-cyan-400/60 group-hover:text-cyan-400/90 transition-colors">Decide</span>
             </button>
           )}
 
@@ -144,32 +155,32 @@ export default function Header({ activeView, onChangeView, compareCount = 0, onE
           {onEditProfile && (
             <button
               onClick={onEditProfile}
-              className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 backdrop-blur-xl shadow-lg shadow-black/20 transition-all ${
+              className={`ax-btn flex items-center gap-2 rounded-xl px-3 py-2 shadow-lg shadow-black/20 transition-all ${
                 hasCompletedOnboarding
-                  ? "border-emerald-500/15 bg-emerald-500/[0.06] hover:border-emerald-500/25 hover:bg-emerald-500/[0.1]"
-                  : "border-white/[0.08] bg-white/[0.04] hover:border-white/15 hover:bg-white/[0.08]"
+                  ? "ax-glass-1 hover:shadow-emerald-500/10"
+                  : "ax-glass-1"
               }`}
             >
-              <span className={hasCompletedOnboarding ? "text-emerald-400/70" : "text-white/40"}>
+              <span className={`transition-colors ${hasCompletedOnboarding ? "text-emerald-400/80" : "text-white/40"}`}>
                 <UserIcon />
               </span>
-              <span className={`text-[11px] font-medium tracking-wide ${hasCompletedOnboarding ? "text-emerald-400/60" : "text-white/35"}`}>
-                {hasCompletedOnboarding ? "Profile" : "Set up profile"}
+              <span className={`text-[11px] font-medium tracking-wide transition-colors ${hasCompletedOnboarding ? "text-emerald-400/70" : "text-white/35"}`}>
+                {hasCompletedOnboarding ? "Profile" : "Set up"}
               </span>
             </button>
           )}
 
           {/* Language switcher */}
-          <div className="flex items-center rounded-xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl shadow-lg shadow-black/20">
-            {locales.map((loc) => (
+          <div className="flex items-center rounded-xl ax-glass-1 shadow-lg shadow-black/20 overflow-hidden">
+            {locales.map((loc, i) => (
               <button
                 key={loc}
                 onClick={() => setLocale(loc)}
-                className={`px-3 py-1.5 text-[11px] font-medium tracking-wide transition-all duration-200 ${
+                className={`px-2.5 py-2 text-[10px] font-semibold tracking-wider transition-all duration-200 ${
                   locale === loc
-                    ? "text-white/80"
-                    : "text-white/25 hover:text-white/50"
-                } ${loc === locales[0] ? "rounded-l-xl" : ""} ${loc === locales[locales.length - 1] ? "rounded-r-xl" : ""}`}
+                    ? "text-white/90 bg-white/[0.06]"
+                    : "text-white/25 hover:text-white/55 hover:bg-white/[0.03]"
+                } ${i > 0 ? "border-l border-white/[0.04]" : ""}`}
                 aria-label={`${t.language_switcher.label}: ${LOCALE_LABELS[loc]}`}
               >
                 {LOCALE_LABELS[loc]}

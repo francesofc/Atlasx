@@ -591,13 +591,16 @@ export default function ResultsModal({ isOpen, onClose, onRedo }: ResultsModalPr
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative z-10 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#0c0c12]/95 to-[#101018]/95 backdrop-blur-2xl shadow-2xl shadow-black/60 ax-modal-in ax-border-glow scrollbar-thin">
+      <div className="relative z-10 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#0a0a14]/96 to-[#0e0e1a]/96 backdrop-blur-2xl shadow-2xl shadow-black/60 ax-modal-in ax-border-glow scrollbar-thin">
+        {/* Decorative top glow */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent z-20" />
+
         {/* Header */}
-        <div className="sticky top-0 z-10 border-b border-white/[0.04] bg-[#0c0c12]/95 backdrop-blur-md px-7 py-5">
+        <div className="sticky top-0 z-10 border-b border-white/[0.05] bg-[#0a0a14]/96 backdrop-blur-md px-7 py-5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white/90">{r.title}</h2>
-              <p className="mt-0.5 text-xs text-white/30">{r.subtitle}</p>
+              <h2 className="text-xl font-bold ax-gradient-text">{r.title}</h2>
+              <p className="mt-1 text-xs text-white/35">{r.subtitle}</p>
             </div>
             <div className="flex items-center gap-3">
               {/* Premium toggle (dev) */}

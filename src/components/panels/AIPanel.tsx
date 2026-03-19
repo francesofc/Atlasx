@@ -229,32 +229,33 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare }: AIPanelProp
       }`}
     >
       <div
-        className="h-full border-l border-white/[0.08] bg-gradient-to-b from-[#0c0c16]/97 to-[#10101c]/97 backdrop-blur-2xl shadow-2xl shadow-black/60 flex flex-col ax-border-glow"
-        style={{ boxShadow: "-20px 0 80px rgba(34,211,238,0.03), 0 0 120px rgba(0,0,0,0.5)" }}
+        className="h-full border-l border-white/[0.06] bg-gradient-to-b from-[#0a0a16]/97 to-[#0e0e1a]/97 backdrop-blur-2xl shadow-2xl shadow-black/60 flex flex-col ax-border-glow"
+        style={{ boxShadow: "-20px 0 80px rgba(34,211,238,0.05), 0 0 120px rgba(0,0,0,0.5)" }}
       >
         {/* Decorative top glow */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-cyan-500/[0.03] to-transparent pointer-events-none" />
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
+        <div className="relative flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 text-cyan-400/80">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-500/15 text-cyan-400 shadow-lg shadow-cyan-500/10">
               <SparkleIcon size={16} />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-white/90">{aiT.title}</h2>
-              <p className="text-[10px] text-white/30">
-                {!hasProfile ? "Demo mode — complete profile for personalized advice" : "Relocation · Tax · Business · Investment Advisor"}
+              <h2 className="text-sm font-bold ax-gradient-text">{aiT.title}</h2>
+              <p className="text-[10px] text-white/30 mt-0.5">
+                {!hasProfile ? "Demo mode — complete profile for personalized advice" : "Relocation · Tax · Business · Investment"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             {!isPremium && (
-              <span className="text-[10px] text-white/25 font-mono">{questionCount}/{FREE_LIMIT}</span>
+              <span className="text-[10px] text-white/30 font-mono tabular-nums bg-white/[0.04] px-2 py-1 rounded-md">{questionCount}/{FREE_LIMIT}</span>
             )}
             <button
               onClick={onClose}
-              className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.08] text-white/30 transition-colors hover:border-white/20 hover:text-white/60"
+              className="ax-btn flex h-7 w-7 items-center justify-center rounded-lg ax-glass-1 text-white/30 transition-colors hover:text-white/60"
             >
               <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
                 <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -414,14 +415,14 @@ export default function AIPanel({ isOpen, onClose, onAddToCompare }: AIPanelProp
                 onKeyDown={handleKeyDown}
                 placeholder={aiT.placeholder}
                 disabled={isThinking}
-                className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-[12px] text-white/75 placeholder:text-white/25 outline-none transition-colors focus:border-cyan-500/30 focus:bg-white/[0.06] disabled:opacity-50"
+                className="flex-1 rounded-xl ax-glass-1 px-4 py-3 text-[13px] text-white/80 placeholder:text-white/25 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:shadow-[0_0_0_1px_rgba(34,211,238,0.15)] disabled:opacity-50"
               />
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() || isThinking}
-                className="ax-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 text-cyan-400/70 transition-all duration-200 hover:from-cyan-500/30 hover:to-blue-500/20 hover:text-cyan-400 hover:shadow-lg hover:shadow-cyan-500/10 disabled:opacity-30"
+                className="ax-btn flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-500/15 text-cyan-400/80 transition-all duration-200 hover:from-cyan-500/35 hover:to-blue-500/25 hover:text-cyan-300 hover:shadow-lg hover:shadow-cyan-500/15 disabled:opacity-30 disabled:hover:shadow-none"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 2 11 13" />
                   <path d="M22 2 15 22 11 13 2 9l20-7Z" />
                 </svg>

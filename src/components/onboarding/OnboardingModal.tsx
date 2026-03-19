@@ -260,17 +260,18 @@ export default function OnboardingModal({ isOpen, onClose, onComplete, editMode 
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-lg mx-4 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#0c0c16]/97 to-[#10101c]/97 backdrop-blur-2xl shadow-2xl shadow-black/60 ax-modal-in ax-border-glow">
+      <div className="relative z-10 w-full max-w-lg mx-4 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#0a0a16]/97 to-[#0e0e1a]/97 backdrop-blur-2xl shadow-2xl shadow-black/60 ax-modal-in ax-border-glow">
         {/* Decorative top line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-cyan-500/[0.03] to-transparent pointer-events-none rounded-t-2xl" />
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.04] px-7 py-5">
+        <div className="relative flex items-center justify-between border-b border-white/[0.05] px-7 py-5">
           <div>
-            <h2 className="text-base font-semibold text-white/90">
+            <h2 className="text-lg font-bold ax-gradient-text">
               {editMode ? "Edit Your Profile" : "Build Your Profile"}
             </h2>
-            <p className="mt-0.5 text-[11px] text-white/30">
+            <p className="mt-1 text-[11px] text-white/30">
               {editMode ? "Update your preferences for better recommendations" : "Tell us about you so we can find your ideal country"}
             </p>
           </div>
@@ -397,14 +398,14 @@ export default function OnboardingModal({ isOpen, onClose, onComplete, editMode 
           {step < TOTAL_STEPS ? (
             <button
               onClick={handleNext}
-              className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-medium text-white/80 transition-all duration-200 hover:bg-white/15"
+              className="ax-btn rounded-full bg-white/[0.08] border border-white/[0.08] px-7 py-2.5 text-sm font-semibold text-white/85 transition-all duration-200 hover:bg-white/[0.12] hover:border-white/[0.12] hover:shadow-lg hover:shadow-white/5"
             >
               Next
             </button>
           ) : (
             <button
               onClick={handleFinish}
-              className="ax-btn rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/15 border border-cyan-500/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition-all duration-200 hover:from-cyan-500/30 hover:to-blue-500/25 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10"
+              className="ax-btn rounded-full bg-gradient-to-r from-cyan-500/25 to-blue-500/20 border border-cyan-500/25 px-7 py-2.5 text-sm font-bold text-white/95 transition-all duration-200 hover:from-cyan-500/35 hover:to-blue-500/30 hover:border-cyan-500/35 hover:shadow-lg hover:shadow-cyan-500/15"
             >
               {editMode ? "Update Profile" : "Get My Results"}
             </button>
