@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback, lazy, Suspense } from "react";
-import MapView from "@/components/map/MapView";
+import { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import CountryPanel from "@/components/panels/CountryPanel";
 import AIPanel from "@/components/panels/AIPanel";
 import ComparePanel from "@/components/panels/ComparePanel";
@@ -11,8 +11,9 @@ import ResultsModal from "@/components/onboarding/ResultsModal";
 import { useProfile } from "@/contexts/ProfileContext";
 import type { CountryInfo } from "@/types";
 
-// Lazy-load particle field so it doesn't block initial render
-const ParticleField = lazy(() => import("@/components/effects/ParticleField"));
+// Dynamic imports with ssr:false — these components use browser-only APIs
+const MapView = dynamic(() => import("@/components/map/MapView"), { ssr: false });
+const ParticleField = dynamic(() => import("@/components/effects/ParticleField"), { ssr: false });
 
 export default function Home() {
   const { hasCompletedOnboarding } = useProfile();
@@ -187,10 +188,8 @@ export default function Home() {
         />
       </div>
 
-      {/* Canvas particle field */}
-      <Suspense fallback={null}>
-        <ParticleField />
-      </Suspense>
+      {/* Canvas particle field — loaded client-only */}
+      <ParticleField />
 
       <Header activeView={activeView} onChangeView={handleChangeView} compareCount={compareIsos.length} onEditProfile={handleEditProfile} onHelpMeDecide={handleHelpMeDecide} />
       <MapView onCountryClick={handleCountryClick} />
