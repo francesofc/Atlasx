@@ -767,3 +767,61 @@
   backdrop-filter: blur(80px) saturate(1.8);
   -webkit-backdrop-filter: blur(80px) saturate(1.8);
 }
+
+/* =========================================================================
+   MAP HERO — Premium immersive map surface
+   ========================================================================= */
+
+/* --- Map surface container — floating elevated card --- */
+.ax-map-surface {
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03),
+    0 8px 32px rgba(0,0,0,0.4),
+    0 32px 80px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* --- Map vignette — atmospheric edge darkening for depth --- */
+.ax-map-vignette {
+  background: radial-gradient(
+    ellipse 85% 80% at 50% 48%,
+    transparent 0%,
+    transparent 55%,
+    rgba(3, 3, 8, 0.15) 75%,
+    rgba(3, 3, 8, 0.4) 90%,
+    rgba(3, 3, 8, 0.65) 100%
+  );
+}
+
+/* --- Map controls — make them ultra-minimal for immersion --- */
+.ax-map-surface .mapboxgl-ctrl-group {
+  background: rgba(8, 8, 20, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
+}
+.ax-map-surface .mapboxgl-ctrl-group button {
+  width: 32px !important;
+  height: 32px !important;
+}
+.ax-map-surface .mapboxgl-ctrl-group button span {
+  opacity: 0.25 !important;
+}
+.ax-map-surface .mapboxgl-ctrl-group button:hover span {
+  opacity: 0.6 !important;
+}
+
+/* --- Map attribution — nearly invisible --- */
+.ax-map-surface .mapboxgl-ctrl-attrib {
+  opacity: 0.12;
+  font-size: 9px;
+}
+.ax-map-surface .mapboxgl-ctrl-bottom-left,
+.ax-map-surface .mapboxgl-ctrl-bottom-right {
+  opacity: 0.2;
+  transition: opacity 0.4s ease;
+}
+.ax-map-surface .mapboxgl-ctrl-bottom-left:hover,
+.ax-map-surface .mapboxgl-ctrl-bottom-right:hover {
+  opacity: 0.5;
+}

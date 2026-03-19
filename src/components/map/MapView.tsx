@@ -16,21 +16,29 @@ interface MapViewProps {
 const COUNTRY_SOURCE = "country-boundaries";
 const COUNTRY_SOURCE_LAYER = "country_boundaries";
 
-/** Convert score 0–100 to an rgba color: red → amber → green */
+/** Convert score 0–100 to an rgba color: red → amber → green
+ *  DRAMATICALLY increased opacity for visual dominance on the map */
 function scoreToColor(score: number): string {
   if (score >= 70) {
-    // Green tier — emerald
+    // Green tier — emerald, strong presence
     const t = (score - 70) / 30;
-    return `rgba(52, 211, 153, ${0.15 + t * 0.15})`;
+    return `rgba(52, 211, 153, ${0.28 + t * 0.22})`;
   } else if (score >= 40) {
-    // Orange tier — amber
+    // Orange tier — amber, warm presence
     const t = (score - 40) / 30;
-    return `rgba(251, 191, 36, ${0.12 + t * 0.08})`;
+    return `rgba(251, 191, 36, ${0.22 + t * 0.16})`;
   } else {
-    // Red tier
+    // Red tier — clear warning
     const t = score / 40;
-    return `rgba(248, 113, 113, ${0.1 + (1 - t) * 0.1})`;
+    return `rgba(248, 113, 113, ${0.18 + (1 - t) * 0.18})`;
   }
+}
+
+/** Score-aware hover color — tints toward score color instead of plain white */
+function scoreToHoverColor(score: number): string {
+  if (score >= 70) return "rgba(52, 211, 153, 0.22)";
+  if (score >= 40) return "rgba(251, 191, 36, 0.20)";
+  return "rgba(248, 113, 113, 0.20)";
 }
 
 export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
@@ -63,23 +71,48 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
     const m = map.current;
     if (!m.getLayer("country-fill")) return;
 
-    // Build a match expression: ["match", ["get", "iso_3166_1_alpha_3"], "USA", "rgba(...)", "FRA", "rgba(...)", default]
+    // Build match expression for fill color
     const matchExpr: (string | string[])[] = ["match", ["get", "iso_3166_1_alpha_3"]];
     for (const [iso, score] of Object.entries(scoreMap)) {
       (matchExpr as unknown[]).push(iso, scoreToColor(score));
     }
     (matchExpr as unknown[]).push("rgba(0, 0, 0, 0)"); // default — no score
 
+    // Build match expression for hover color (score-aware)
+    const hoverMatchExpr: (string | string[])[] = ["match", ["get", "iso_3166_1_alpha_3"]];
+    for (const [iso, score] of Object.entries(scoreMap)) {
+      (hoverMatchExpr as unknown[]).push(iso, scoreToHoverColor(score));
+    }
+    (hoverMatchExpr as unknown[]).push("rgba(255, 255, 255, 0.08)");
+
     m.setPaintProperty("country-fill", "fill-color", [
       "case",
       ["boolean", ["feature-state", "hover"], false],
-      "rgba(255, 255, 255, 0.12)",
+      [...hoverMatchExpr] as unknown as mapboxgl.Expression,
       ["boolean", ["feature-state", "clicked"], false],
-      "rgba(255, 255, 255, 0.18)",
+      "rgba(255, 255, 255, 0.25)",
       ...(matchExpr as unknown as []),
     ] as unknown as mapboxgl.Expression);
 
     m.setPaintProperty("country-fill", "fill-opacity", 1);
+
+    // Update score-aware glow layer for hover
+    if (m.getLayer("country-score-glow")) {
+      const glowMatchExpr: (string | string[])[] = ["match", ["get", "iso_3166_1_alpha_3"]];
+      for (const [iso, score] of Object.entries(scoreMap)) {
+        if (score >= 70) (glowMatchExpr as unknown[]).push(iso, "rgba(52, 211, 153, 0.35)");
+        else if (score >= 40) (glowMatchExpr as unknown[]).push(iso, "rgba(251, 191, 36, 0.30)");
+        else (glowMatchExpr as unknown[]).push(iso, "rgba(248, 113, 113, 0.30)");
+      }
+      (glowMatchExpr as unknown[]).push("rgba(255, 255, 255, 0.15)");
+
+      m.setPaintProperty("country-score-glow", "line-color", [
+        "case",
+        ["boolean", ["feature-state", "hover"], false],
+        [...glowMatchExpr] as unknown as mapboxgl.Expression,
+        "rgba(0, 0, 0, 0)",
+      ] as unknown as mapboxgl.Expression);
+    }
 
   }, [scoreMap]);
 
@@ -107,12 +140,13 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
     mapInstance.scrollZoom.setWheelZoomRate(1 / 200);
 
     mapInstance.on("style.load", () => {
+      // Premium atmospheric fog — deeper, richer, more spatial
       mapInstance.setFog({
-        color: "rgb(8, 6, 18)",
-        "high-color": "rgb(30, 15, 60)",
-        "horizon-blend": 0.06,
-        "space-color": "rgb(3, 3, 10)",
-        "star-intensity": 0.85,
+        color: "rgb(6, 4, 16)",
+        "high-color": "rgb(20, 10, 50)",
+        "horizon-blend": 0.04,
+        "space-color": "rgb(2, 2, 8)",
+        "star-intensity": 0.7,
       });
 
       if (!mapInstance.getSource(COUNTRY_SOURCE)) {
@@ -134,7 +168,22 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
           }
         }
 
-        // Country fill — uses scoreMap colors by default, hover/click override
+        // Always-visible subtle country borders for depth and definition
+        mapInstance.addLayer(
+          {
+            id: "country-border-subtle",
+            type: "line",
+            source: COUNTRY_SOURCE,
+            "source-layer": COUNTRY_SOURCE_LAYER,
+            paint: {
+              "line-color": "rgba(255, 255, 255, 0.07)",
+              "line-width": 0.6,
+            },
+          },
+          beforeLayerId
+        );
+
+        // Country fill — primary visual layer
         mapInstance.addLayer(
           {
             id: "country-fill",
@@ -145,20 +194,20 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
               "fill-color": [
                 "case",
                 ["boolean", ["feature-state", "hover"], false],
-                "rgba(255, 255, 255, 0.12)",
+                "rgba(255, 255, 255, 0.15)",
                 ["boolean", ["feature-state", "clicked"], false],
-                "rgba(255, 255, 255, 0.18)",
+                "rgba(255, 255, 255, 0.25)",
                 "rgba(0, 0, 0, 0)",
               ],
               "fill-opacity": 1,
-              "fill-opacity-transition": { duration: 300 },
-              "fill-color-transition": { duration: 500 },
+              "fill-opacity-transition": { duration: 400 },
+              "fill-color-transition": { duration: 600 },
             },
           },
           beforeLayerId
         );
 
-        // Hover border
+        // Hover border — crisp inner line
         mapInstance.addLayer(
           {
             id: "country-border-hover",
@@ -169,28 +218,55 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
               "line-color": [
                 "case",
                 ["boolean", ["feature-state", "hover"], false],
-                "rgba(255, 255, 255, 0.45)",
-                ["boolean", ["feature-state", "clicked"], false],
                 "rgba(255, 255, 255, 0.55)",
+                ["boolean", ["feature-state", "clicked"], false],
+                "rgba(255, 255, 255, 0.7)",
                 "rgba(0, 0, 0, 0)",
               ],
               "line-width": [
                 "case",
                 ["boolean", ["feature-state", "hover"], false],
-                1.5,
+                1.8,
                 ["boolean", ["feature-state", "clicked"], false],
-                2,
+                2.5,
                 0,
               ],
-              "line-blur": 1,
-              "line-width-transition": { duration: 300 },
-              "line-color-transition": { duration: 300 },
+              "line-blur": 0.5,
+              "line-width-transition": { duration: 200 },
+              "line-color-transition": { duration: 200 },
             },
           },
           beforeLayerId
         );
 
-        // Outer glow
+        // Score-aware outer glow — soft halo around hovered country
+        mapInstance.addLayer(
+          {
+            id: "country-score-glow",
+            type: "line",
+            source: COUNTRY_SOURCE,
+            "source-layer": COUNTRY_SOURCE_LAYER,
+            paint: {
+              "line-color": [
+                "case",
+                ["boolean", ["feature-state", "hover"], false],
+                "rgba(255, 255, 255, 0.15)",
+                "rgba(0, 0, 0, 0)",
+              ],
+              "line-width": [
+                "case",
+                ["boolean", ["feature-state", "hover"], false],
+                8,
+                0,
+              ],
+              "line-blur": 6,
+              "line-width-transition": { duration: 300 },
+            },
+          },
+          beforeLayerId
+        );
+
+        // Click pulse glow — dramatic but brief
         mapInstance.addLayer(
           {
             id: "country-border-glow",
@@ -200,33 +276,18 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
             paint: {
               "line-color": [
                 "case",
-                ["boolean", ["feature-state", "hover"], false],
-                "rgba(255, 255, 255, 0.1)",
+                ["boolean", ["feature-state", "clicked"], false],
+                "rgba(167, 139, 250, 0.25)",
                 "rgba(0, 0, 0, 0)",
               ],
               "line-width": [
                 "case",
-                ["boolean", ["feature-state", "hover"], false],
-                5,
+                ["boolean", ["feature-state", "clicked"], false],
+                12,
                 0,
               ],
-              "line-blur": 3,
+              "line-blur": 8,
               "line-width-transition": { duration: 400 },
-            },
-          },
-          beforeLayerId
-        );
-
-        // Subtle always-visible country borders for depth
-        mapInstance.addLayer(
-          {
-            id: "country-border-subtle",
-            type: "line",
-            source: COUNTRY_SOURCE,
-            "source-layer": COUNTRY_SOURCE_LAYER,
-            paint: {
-              "line-color": "rgba(255, 255, 255, 0.04)",
-              "line-width": 0.5,
             },
           },
           beforeLayerId
@@ -246,7 +307,7 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
       }
     });
 
-    // Hover
+    // Hover — smooth and responsive
     mapInstance.on("mousemove", "country-fill", (e) => {
       if (e.features && e.features.length > 0) {
         if (hoveredCountryId.current !== null) {
@@ -277,7 +338,7 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
       mapInstance.getCanvas().style.cursor = "";
     });
 
-    // Click with pulse
+    // Click with refined pulse
     mapInstance.on("click", "country-fill", (e) => {
       handleCountryClick(e);
       if (e.features && e.features.length > 0 && e.features[0].id != null) {
@@ -293,7 +354,7 @@ export default function MapView({ onCountryClick, scoreMap }: MapViewProps) {
               { clicked: false }
             );
           } catch { /* map may have been removed */ }
-        }, 600);
+        }, 800);
       }
     });
 
