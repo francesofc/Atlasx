@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { getCountryByIso, type Country } from "@/data/countries";
 import { useI18n } from "@/contexts/I18nContext";
+import { getCultureByIso, type CountryCulture } from "@/data/country-culture";
 import {
   scoreCountry,
   getScoreBreakdown,
@@ -20,6 +21,35 @@ interface InsightPanelProps {
   onClose: () => void;
   onAskAI?: (iso: string) => void;
   onAddToCompare?: (iso: string) => void;
+}
+
+type Tab = "overview" | "analytics" | "culture";
+
+/* ── Wikipedia image hook ── */
+function useCountryImage(wikiSlug: string): { url: string | null; loading: boolean } {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!wikiSlug) { setLoading(false); return; }
+    setUrl(null);
+    setLoading(true);
+    const controller = new AbortController();
+    fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiSlug)}`,
+      { signal: controller.signal }
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        const src = data?.originalimage?.source || data?.thumbnail?.source || null;
+        setUrl(src);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+    return () => controller.abort();
+  }, [wikiSlug]);
+
+  return { url, loading };
 }
 
 /* ── Score Ring ── */
@@ -301,16 +331,14 @@ function IntelligenceBrief({ country, module, score }: { country: Country; modul
   const explanation = explanations[tier];
 
   const quickFacts = useMemo(() => {
-    const facts: { icon: string; label: string; value: string; color?: string }[] = [];
-
-    facts.push({ icon: "🏛", label: "Government", value: country.government.type });
-    facts.push({ icon: "👤", label: "Leader", value: country.government.current_leader });
-    facts.push({ icon: "🌍", label: "Population", value: `${(country.population_data.population / 1e6).toFixed(1)}M` });
-    facts.push({ icon: "💰", label: "Currency", value: country.economy.currency });
-    facts.push({ icon: "🌡", label: "Climate", value: country.climate.average_temp });
-    facts.push({ icon: "🗣", label: "Language", value: country.language.split(",")[0].trim() });
-
-    return facts;
+    return [
+      { icon: "🏛", label: "Government", value: country.government.type },
+      { icon: "👤", label: "Leader", value: country.government.current_leader },
+      { icon: "🌍", label: "Population", value: `${(country.population_data.population / 1e6).toFixed(1)}M` },
+      { icon: "💰", label: "Currency", value: country.economy.currency },
+      { icon: "🌡", label: "Climate", value: country.climate.average_temp },
+      { icon: "🗣", label: "Language", value: country.language.split(",")[0].trim() },
+    ];
   }, [country]);
 
   const keyIndustries = country.main_industries.slice(0, 4);
@@ -318,17 +346,15 @@ function IntelligenceBrief({ country, module, score }: { country: Country; modul
 
   return (
     <div className="space-y-4">
-      {/* Module explanation */}
       <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3.5 ax-section-in" style={{ animationDelay: "150ms", borderLeft: `2px solid ${tier === "green" ? "rgba(52,211,153,0.4)" : tier === "orange" ? "rgba(251,191,36,0.4)" : "rgba(248,113,113,0.4)"}` }}>
         <p className="text-[11px] leading-relaxed text-white/40">{explanation}</p>
       </div>
 
-      {/* Quick facts grid */}
       <div className="grid grid-cols-2 gap-2">
         {quickFacts.map((f, i) => (
           <div
             key={f.label}
-            className="flex items-center gap-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 ax-section-in transition-transform duration-200 hover:scale-[1.02]"
+            className="flex items-center gap-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 ax-section-in transition-all duration-200 hover:bg-white/[0.04] hover:border-white/[0.08] hover:scale-[1.02]"
             style={{ animationDelay: `${180 + i * 40}ms` }}
           >
             <span className="text-xs">{f.icon}</span>
@@ -340,13 +366,12 @@ function IntelligenceBrief({ country, module, score }: { country: Country; modul
         ))}
       </div>
 
-      {/* Industries & Exports */}
       <div className="grid grid-cols-2 gap-3">
         <div className="ax-section-in" style={{ animationDelay: "350ms" }}>
           <span className="block text-[9px] font-semibold uppercase tracking-wider text-white/15 mb-2">Industries</span>
           <div className="flex flex-wrap gap-1">
             {keyIndustries.map((ind) => (
-              <span key={ind} className="inline-block rounded-lg bg-white/[0.03] border border-white/[0.05] px-2 py-1 text-[9px] text-white/35">{ind}</span>
+              <span key={ind} className="inline-block rounded-lg bg-white/[0.03] border border-white/[0.05] px-2 py-1 text-[9px] text-white/35 hover:text-white/55 transition-colors">{ind}</span>
             ))}
           </div>
         </div>
@@ -354,7 +379,7 @@ function IntelligenceBrief({ country, module, score }: { country: Country; modul
           <span className="block text-[9px] font-semibold uppercase tracking-wider text-white/15 mb-2">Exports</span>
           <div className="flex flex-wrap gap-1">
             {topExports.map((exp) => (
-              <span key={exp} className="inline-block rounded-lg bg-white/[0.03] border border-white/[0.05] px-2 py-1 text-[9px] text-white/35">{exp}</span>
+              <span key={exp} className="inline-block rounded-lg bg-white/[0.03] border border-white/[0.05] px-2 py-1 text-[9px] text-white/35 hover:text-white/55 transition-colors">{exp}</span>
             ))}
           </div>
         </div>
@@ -374,11 +399,153 @@ function SectionHeader({ title, delay }: { title: string; delay: number }) {
   );
 }
 
+/* ── Tab Button ── */
+function TabBtn({ label, icon, active, onClick }: { label: string; icon: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative flex items-center gap-1.5 py-3 px-1 text-[11px] font-semibold uppercase tracking-wider transition-all duration-200 border-b-2 ${
+        active
+          ? "border-cyan-400/70 text-cyan-300/90"
+          : "border-transparent text-white/28 hover:text-white/50 hover:border-white/15"
+      }`}
+    >
+      <span className="text-[13px]">{icon}</span>
+      {label}
+      {active && (
+        <span className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+      )}
+    </button>
+  );
+}
+
+/* ── Culture Tab ── */
+function CultureTab({ culture }: { culture: CountryCulture }) {
+  return (
+    <div className="space-y-5 pb-4">
+      {/* Genre badge + scene note */}
+      <div className="ax-section-in" style={{ animationDelay: "80ms" }}>
+        <div className="rounded-2xl overflow-hidden border border-white/[0.06]" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(59,130,246,0.05) 100%)" }}>
+          <div className="px-4 pt-4 pb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-base">🎵</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-violet-300/60">Music Scene</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {culture.music_genre.split(" · ").map((g) => (
+                <span
+                  key={g}
+                  className="inline-block rounded-full border border-violet-400/20 bg-violet-500/10 px-2.5 py-1 text-[10px] font-semibold text-violet-300/70"
+                >
+                  {g}
+                </span>
+              ))}
+            </div>
+            <p className="text-[11px] leading-relaxed text-white/35 italic">&ldquo;{culture.scene_note}&rdquo;</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Artists */}
+      <div className="ax-section-in" style={{ animationDelay: "160ms" }}>
+        <span className="block text-[9px] font-semibold uppercase tracking-[0.18em] text-white/18 mb-3">Top Artists</span>
+        <div className="space-y-2">
+          {culture.artists.map((artist, i) => (
+            <div
+              key={artist.name}
+              className="flex items-center gap-3 rounded-xl border border-white/[0.04] bg-white/[0.02] px-3.5 py-2.5 ax-section-in transition-all duration-200 hover:bg-white/[0.04] hover:border-white/[0.08] group"
+              style={{ animationDelay: `${200 + i * 50}ms` }}
+            >
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold tabular-nums" style={{ background: "rgba(139,92,246,0.12)", color: "rgba(196,181,253,0.6)" }}>
+                {i + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[12px] font-semibold text-white/70 group-hover:text-white/85 transition-colors truncate">{artist.name}</span>
+                <span className="block text-[10px] text-white/28 truncate">{artist.genre}</span>
+              </div>
+              <span className="text-base opacity-40 group-hover:opacity-70 transition-opacity">🎤</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Hit Songs */}
+      <div className="ax-section-in" style={{ animationDelay: "500ms" }}>
+        <span className="block text-[9px] font-semibold uppercase tracking-[0.18em] text-white/18 mb-3">Essential Tracks</span>
+        <div className="rounded-xl border border-white/[0.05] overflow-hidden" style={{ background: "rgba(255,255,255,0.012)" }}>
+          {culture.hits.map((hit, i) => (
+            <div
+              key={hit.title}
+              className={`flex items-center gap-3 px-3.5 py-3 ax-section-in transition-all duration-150 hover:bg-white/[0.03] group ${i > 0 ? "border-t border-white/[0.04]" : ""}`}
+              style={{ animationDelay: `${540 + i * 50}ms` }}
+            >
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center">
+                <svg className="opacity-20 group-hover:opacity-50 transition-opacity" width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" />
+                  <path d="M10 8l6 4-6 4V8z" fill="white" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[12px] font-medium text-white/65 group-hover:text-white/80 transition-colors truncate">{hit.title}</span>
+                <span className="block text-[10px] text-white/28 truncate">{hit.artist}</span>
+              </div>
+              <span className="text-[10px] tabular-nums text-white/18 shrink-0">{hit.year}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Hero Image ── */
+function HeroImage({ url, loading, countryName }: { url: string | null; loading: boolean; countryName: string }) {
+  if (loading) {
+    return (
+      <div className="relative h-[160px] w-full overflow-hidden bg-white/[0.02]">
+        <div className="absolute inset-0 ax-skeleton" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0a0f]" />
+      </div>
+    );
+  }
+  if (!url) {
+    return (
+      <div
+        className="relative h-[160px] w-full overflow-hidden"
+        style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(139,92,246,0.10) 50%, rgba(6,182,212,0.08) 100%)" }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-5xl opacity-10">🌍</span>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0a0f]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#0a0a0f]/60" />
+      </div>
+    );
+  }
+  return (
+    <div className="relative h-[160px] w-full overflow-hidden">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={url}
+        alt={countryName}
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+        style={{ filter: "brightness(0.55) saturate(1.1)" }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/40 via-transparent to-[#0a0a0f]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#0a0a0f]/50" />
+      {/* Subtle noise texture overlay */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
+    </div>
+  );
+}
+
 /* ── Main Panel ── */
 export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, onAddToCompare }: InsightPanelProps) {
   const { locale } = useI18n();
+  const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   const country = useMemo(() => (iso ? getCountryByIso(iso) : undefined), [iso]);
+  const culture = useMemo(() => (iso ? getCultureByIso(iso) : undefined), [iso]);
   const moduleDef = MODULES.find((m) => m.id === module)!;
 
   const score = useMemo(() => (country ? scoreCountry(country, module) : 0), [country, module]);
@@ -387,7 +554,16 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
   const breakdown = useMemo(() => (country ? getScoreBreakdown(country, module) : []), [country, module]);
   const insights = useMemo(() => (country ? generateInsights(country, module, score) : { risks: [], opportunities: [] }), [country, module, score]);
 
+  const { url: heroUrl, loading: heroLoading } = useCountryImage(culture?.wikiSlug ?? "");
+
+  // Reset tab when country changes
+  useEffect(() => { setActiveTab("overview"); }, [iso]);
+
+  const handleClose = useCallback(() => onClose(), [onClose]);
+
   if (!isOpen || !country) return null;
+
+  const tierLabel = tier === "green" ? "Excellent" : tier === "orange" ? "Average" : "Poor";
 
   return (
     <>
@@ -395,144 +571,221 @@ export default function InsightPanel({ iso, module, isOpen, onClose, onAskAI, on
       <div
         className="fixed inset-0 z-35 ax-overlay-backdrop ax-scale-in"
         style={{ animationDuration: "0.3s" }}
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Panel */}
       <div className="fixed right-4 top-4 bottom-4 z-40 w-full max-w-[400px] rounded-2xl ax-glass-3 ax-depth-3 flex flex-col overflow-hidden ax-panel-in">
-        {/* Top accent line */}
-        <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-        {/* Header */}
-        <div className="relative px-6 pt-5 pb-4">
-          <div className="flex items-start justify-between">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2.5 mb-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06]">
-                  <span className="text-xs">{moduleDef.icon}</span>
-                </div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/30">{moduleDef.label} Analysis</span>
-              </div>
-              <h2 className="text-xl font-bold ax-gradient-text tracking-tight">{country.name[locale]}</h2>
-            </div>
-            <button
-              onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.04] text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-all mt-1"
-            >
-              <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
+        {/* ── Hero Image ── */}
+        <div className="relative shrink-0">
+          <HeroImage url={heroUrl} loading={heroLoading} countryName={country.name[locale]} />
+
+          {/* Module badge — top left over image */}
+          <div className="absolute top-3.5 left-4 flex items-center gap-1.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/[0.08] px-2.5 py-1.5">
+            <span className="text-[11px]">{moduleDef.icon}</span>
+            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/60">{moduleDef.label}</span>
           </div>
-        </div>
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-thin">
-          {/* Score Hero */}
-          <div className="flex flex-col items-center py-4 ax-section-in">
-            <div className="relative flex items-center justify-center rounded-full p-4" style={{ background: "radial-gradient(circle, rgba(139,92,246,0.06) 0%, rgba(59,130,246,0.03) 40%, transparent 70%)" }}>
-              <ScoreRing score={score} size={100} />
+          {/* Close button — top right over image */}
+          <button
+            onClick={handleClose}
+            className="absolute top-3.5 right-4 flex h-8 w-8 items-center justify-center rounded-xl bg-black/40 backdrop-blur-md border border-white/[0.08] text-white/50 hover:text-white/80 hover:bg-black/60 transition-all"
+          >
+            <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+              <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {/* Country name + score pill — bottom of hero */}
+          <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-tight drop-shadow-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.8)" }}>
+                {country.name[locale]}
+              </h2>
+              <p className="text-[10px] text-white/45 mt-0.5">{country.capital} · {country.language.split(",")[0].trim()}</p>
             </div>
-            <div className="mt-4">
-              <span className={`ax-tier-badge ${tc.bg} ${tc.border} border ${tc.text} px-4 py-1.5 text-[11px]`}>
-                <span className={`h-[7px] w-[7px] rounded-full ${tc.dot}`} />
-                {tier === "green" ? "Excellent" : tier === "orange" ? "Average" : "Poor"}
+            <div className="flex flex-col items-end gap-1">
+              <span className={`ax-tier-badge ${tc.bg} ${tc.border} border ${tc.text} px-3 py-1 text-[10px]`}>
+                <span className={`h-[6px] w-[6px] rounded-full ${tc.dot}`} />
+                {tierLabel}
+              </span>
+              <span className={`text-[22px] font-bold tabular-nums ${tc.text} drop-shadow-lg`} style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
+                {score}<span className="text-[11px] font-normal text-white/30">/100</span>
               </span>
             </div>
           </div>
+        </div>
 
-          {/* Intelligence Brief */}
-          <SectionHeader title="Intelligence Brief" delay={60} />
-          <div className="mb-6">
-            <IntelligenceBrief country={country} module={module} score={score} />
-          </div>
+        {/* ── Tab Navigation ── */}
+        <div className="shrink-0 flex gap-5 px-5 border-b border-white/[0.06] bg-transparent">
+          <TabBtn label="Overview" icon="🔭" active={activeTab === "overview"} onClick={() => setActiveTab("overview")} />
+          <TabBtn label="Analytics" icon="📊" active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")} />
+          <TabBtn label="Culture" icon="🎵" active={activeTab === "culture"} onClick={() => setActiveTab("culture")} />
+        </div>
 
-          {/* Score Breakdown */}
-          <SectionHeader title="Score Breakdown" delay={420} />
-          <div className="ax-insight-card ax-glass-1 mb-6">
-            {breakdown.map((b, i) => (
-              <BreakdownBar key={b.label} label={b.label} score={b.score} tier={b.tier} delay={120 + i * 60} />
-            ))}
-          </div>
+        {/* ── Scrollable Tab Content ── */}
+        <div className="flex-1 overflow-y-auto px-5 pt-5 pb-6 scrollbar-thin">
 
-          {/* Key Data */}
-          <SectionHeader title="Key Data" delay={500} />
-          <div className="ax-insight-card ax-glass-1 mb-6">
-            <ModuleStats country={country} module={module} />
-          </div>
-
-          {/* Opportunities */}
-          <SectionHeader title="Opportunities" delay={560} />
-          <div className="space-y-2 mb-6">
-            {insights.opportunities.map((text, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 rounded-xl border border-emerald-500/[0.08] bg-emerald-500/[0.03] px-4 py-3 ax-section-in"
-                style={{ animationDelay: `${600 + i * 60}ms` }}
-              >
-                <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(52,211,153,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M7 17l5-5 5 5" /><path d="M7 12l5-5 5 5" />
-                </svg>
-                <span className="text-[12px] leading-relaxed text-emerald-400/70">{text}</span>
+          {/* ───── OVERVIEW TAB ───── */}
+          {activeTab === "overview" && (
+            <div className="space-y-5">
+              {/* Intelligence Brief */}
+              <div>
+                <SectionHeader title="Intelligence Brief" delay={60} />
+                <IntelligenceBrief country={country} module={module} score={score} />
               </div>
-            ))}
-          </div>
 
-          {/* Risks */}
-          <SectionHeader title="Risks" delay={700} />
-          <div className="space-y-2 mb-6">
-            {insights.risks.map((text, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 rounded-xl border border-red-500/[0.08] bg-red-500/[0.03] px-4 py-3 ax-section-in"
-                style={{ animationDelay: `${740 + i * 60}ms` }}
-              >
-                <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(248,113,113,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3v12" /><path d="M12 21h.01" />
-                </svg>
-                <span className="text-[12px] leading-relaxed text-red-400/65">{text}</span>
+              {/* Opportunities */}
+              <div>
+                <SectionHeader title="Opportunities" delay={400} />
+                <div className="space-y-2">
+                  {insights.opportunities.map((text, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 rounded-xl border border-emerald-500/[0.08] bg-emerald-500/[0.03] px-4 py-3 ax-section-in hover:bg-emerald-500/[0.05] transition-colors"
+                      style={{ animationDelay: `${440 + i * 60}ms` }}
+                    >
+                      <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(52,211,153,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M7 17l5-5 5 5" /><path d="M7 12l5-5 5 5" />
+                      </svg>
+                      <span className="text-[12px] leading-relaxed text-emerald-400/70">{text}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 ax-section-in" style={{ animationDelay: "860ms" }}>
-            {onAddToCompare && (
-              <button
-                onClick={() => onAddToCompare(country.iso_code)}
-                className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500/[0.15] to-indigo-500/[0.10] border border-violet-500/[0.15] px-4 py-3.5 text-[12px] font-semibold text-violet-300/70 hover:text-violet-300 hover:border-violet-500/30 transition-all"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                  <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                  <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                  <rect x="14" y="14" width="7" height="7" rx="1.5" />
-                </svg>
-                Compare
-              </button>
-            )}
-            {onAskAI && (
-              <button
-                onClick={() => onAskAI(country.iso_code)}
-                className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500/[0.14] to-blue-500/[0.10] border border-cyan-500/[0.18] px-4 py-3.5 text-[12px] font-semibold text-cyan-300/80 hover:text-cyan-300 hover:border-cyan-500/30 shadow-sm shadow-cyan-500/5 transition-all"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3v1m0 16v1m-8-9H3m18 0h-1m-2.636-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
-                </svg>
-                Ask AI
-              </button>
-            )}
-          </div>
+              {/* Risks */}
+              <div>
+                <SectionHeader title="Risks" delay={600} />
+                <div className="space-y-2">
+                  {insights.risks.map((text, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 rounded-xl border border-red-500/[0.08] bg-red-500/[0.03] px-4 py-3 ax-section-in hover:bg-red-500/[0.05] transition-colors"
+                      style={{ animationDelay: `${640 + i * 60}ms` }}
+                    >
+                      <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(248,113,113,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 3v12" /><path d="M12 21h.01" />
+                      </svg>
+                      <span className="text-[12px] leading-relaxed text-red-400/65">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          {/* Description */}
-          <div className="mt-6 ax-section-in" style={{ animationDelay: "920ms" }}>
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3.5">
-              <span className="block text-[9px] font-semibold uppercase tracking-[0.15em] text-white/20 mb-2">About {country.name[locale]}</span>
-              <p className="text-[11.5px] leading-relaxed text-white/35">
-                {country.short_description[locale]}
-              </p>
+              {/* About */}
+              <div className="ax-section-in" style={{ animationDelay: "800ms" }}>
+                <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3.5">
+                  <span className="block text-[9px] font-semibold uppercase tracking-[0.15em] text-white/20 mb-2">About {country.name[locale]}</span>
+                  <p className="text-[11.5px] leading-relaxed text-white/35">{country.short_description[locale]}</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 ax-section-in" style={{ animationDelay: "880ms" }}>
+                {onAddToCompare && (
+                  <button
+                    onClick={() => onAddToCompare(country.iso_code)}
+                    className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500/[0.15] to-indigo-500/[0.10] border border-violet-500/[0.15] px-4 py-3.5 text-[12px] font-semibold text-violet-300/70 hover:text-violet-300 hover:border-violet-500/30 transition-all"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                    </svg>
+                    Compare
+                  </button>
+                )}
+                {onAskAI && (
+                  <button
+                    onClick={() => onAskAI(country.iso_code)}
+                    className="ax-btn flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500/[0.14] to-blue-500/[0.10] border border-cyan-500/[0.18] px-4 py-3.5 text-[12px] font-semibold text-cyan-300/80 hover:text-cyan-300 hover:border-cyan-500/30 shadow-sm shadow-cyan-500/5 transition-all"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 3v1m0 16v1m-8-9H3m18 0h-1m-2.636-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
+                    </svg>
+                    Ask AI
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* ───── ANALYTICS TAB ───── */}
+          {activeTab === "analytics" && (
+            <div className="space-y-5">
+              {/* Score Ring */}
+              <div className="flex flex-col items-center py-4 ax-section-in">
+                <div
+                  className="relative flex items-center justify-center rounded-full p-4"
+                  style={{ background: "radial-gradient(circle, rgba(139,92,246,0.06) 0%, rgba(59,130,246,0.03) 40%, transparent 70%)" }}
+                >
+                  <ScoreRing score={score} size={110} />
+                </div>
+                <p className="mt-3 text-[11px] text-white/30 text-center max-w-[220px]">
+                  {tier === "green" ? "Strong performance across assessed indicators" : tier === "orange" ? "Mixed performance — some areas of concern" : "Significant challenges in this module"}
+                </p>
+              </div>
+
+              {/* Score Breakdown */}
+              <div>
+                <SectionHeader title="Score Breakdown" delay={100} />
+                <div className="ax-insight-card ax-glass-1">
+                  {breakdown.map((b, i) => (
+                    <BreakdownBar key={b.label} label={b.label} score={b.score} tier={b.tier} delay={120 + i * 60} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Key Data */}
+              <div>
+                <SectionHeader title="Key Data" delay={400} />
+                <div className="ax-insight-card ax-glass-1">
+                  <ModuleStats country={country} module={module} />
+                </div>
+              </div>
+
+              {/* Economic snapshot */}
+              <div className="ax-section-in" style={{ animationDelay: "600ms" }}>
+                <SectionHeader title="Economic Snapshot" delay={580} />
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "GDP", value: `$${(country.economy.gdp / 1000).toFixed(1)}T`, icon: "📈" },
+                    { label: "GDP/Capita", value: `$${country.economy.gdp_per_capita.toLocaleString()}`, icon: "💵" },
+                    { label: "Inflation", value: `${country.economy.inflation}%`, icon: "📊" },
+                    { label: "Life Expect.", value: `${country.population_data.life_expectancy}yr`, icon: "🫀" },
+                  ].map((stat, i) => (
+                    <div
+                      key={stat.label}
+                      className="rounded-xl bg-white/[0.02] border border-white/[0.04] px-3.5 py-3 ax-section-in hover:bg-white/[0.04] transition-colors"
+                      style={{ animationDelay: `${620 + i * 40}ms` }}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[11px]">{stat.icon}</span>
+                        <span className="text-[9px] text-white/20 uppercase tracking-wider">{stat.label}</span>
+                      </div>
+                      <span className="text-[15px] font-bold text-white/65 tabular-nums">{stat.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ───── CULTURE TAB ───── */}
+          {activeTab === "culture" && (
+            culture ? (
+              <CultureTab culture={culture} />
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center ax-section-in">
+                <span className="text-4xl mb-4 opacity-30">🎵</span>
+                <p className="text-[12px] text-white/25">No culture data available for this country yet.</p>
+              </div>
+            )
+          )}
+
         </div>
       </div>
     </>
